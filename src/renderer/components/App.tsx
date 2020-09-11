@@ -1,9 +1,24 @@
+import { execSync } from 'child_process';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import React from 'react';
+import { cssRule, style } from 'typestyle';
+import { parseString } from 'xml2js';
+import Button from './Button';
 import FilePicker from './FilePicker';
-import { style } from 'typestyle';
+
+cssRule('body', {
+  margin: 0,
+  overflow: 'hidden',
+  background: 'white',
+});
 
 const className = style({
   fontFamily: 'sans-serif',
+  width: '100vw',
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
 });
 
 interface AppState {
@@ -29,6 +44,25 @@ export default class App extends React.Component<{}, AppState> {
     });
   };
 
+  private loadGff = () => {
+    if (this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile)) {
+      const resolvedTool = resolve(this.state.toolsPath, 'gff2xml');
+      const resolvedGui = resolve(this.state.guiFile);
+
+      const command = `${resolvedTool} ${resolvedGui}`;
+      const buff = execSync(command);
+
+      parseString(buff.toString(), (err, res) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+
+        console.log(res);
+      });
+    }
+  };
+
   public render() {
     return (
       <div className={className}>
@@ -39,6 +73,7 @@ export default class App extends React.Component<{}, AppState> {
           updateFile={(file) => this.updateFilePath({ toolsPath: file })}
         />
         <FilePicker label="GUI File" file={this.state.guiFile} filter="gui" updateFile={(file) => this.updateFilePath({ guiFile: file })} />
+        <Button onClick={this.loadGff}>Load</Button>
       </div>
     );
   }

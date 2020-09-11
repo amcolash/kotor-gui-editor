@@ -12,11 +12,13 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "source-map-support": "^0.5.16",
-    "typestyle": "^2.1.0"
+    "typestyle": "^2.1.0",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/react": "^16.9.49",
     "@types/react-dom": "^16.9.8",
+    "@types/xml2js": "^0.4.5",
     "electron": "8.2.0",
     "electron-builder": "^22.4.1",
     "electron-webpack": "^2.8.2",

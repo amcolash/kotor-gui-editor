@@ -1,7 +1,7 @@
-import React from 'react';
-import { style } from 'typestyle';
 import { remote } from 'electron';
 import { existsSync } from 'fs';
+import React from 'react';
+import { style } from 'typestyle';
 
 const className = style({
   padding: 6,
