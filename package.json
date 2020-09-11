@@ -11,7 +11,8 @@
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.16",
+    "typestyle": "^2.1.0"
   },
   "devDependencies": {
     "@types/react": "^16.9.49",
