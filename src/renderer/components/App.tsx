@@ -4,7 +4,7 @@ import { writeFileSync } from 'original-fs';
 import { resolve } from 'path';
 import React from 'react';
 import { cssRule, style } from 'typestyle';
-import { js2xml, xml2js } from 'xml-js';
+import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
 import Tree from './Tree';
@@ -32,20 +32,12 @@ interface AppState {
 }
 
 export default class App extends React.Component<{}, AppState> {
-  constructor(props: {}) {
-    super(props);
-
-    const toolsPath = localStorage.getItem('toolsPath') || undefined;
-    const tgaPath = localStorage.getItem('tgaPath') || undefined;
-    const guiFile = localStorage.getItem('guiFile') || undefined;
-
-    this.state = {
-      data: '',
-      toolsPath,
-      tgaPath,
-      guiFile,
-    };
-  }
+  state: AppState = {
+    data: '',
+    toolsPath: localStorage.getItem('toolsPath') || undefined,
+    tgaPath: localStorage.getItem('tgaPath') || undefined,
+    guiFile: localStorage.getItem('guiFile') || undefined,
+  };
 
   private checkPaths = () => {
     return this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile);
@@ -65,7 +57,7 @@ export default class App extends React.Component<{}, AppState> {
 
       const xml = readFileSync(resolvedXml);
 
-      const data = xml2js(xml.toString(), { compact: true });
+      const data = toJson(xml, { object: true, reversible: true, sanitize: true, trim: true });
       this.setState({ data });
 
       console.log('data', data);
@@ -78,7 +70,7 @@ export default class App extends React.Component<{}, AppState> {
       const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
       const resolvedXml = resolve(this.state.guiFile! + '-saved.xml');
 
-      const xml = js2xml(this.state.data, { fullTagEmptyElement: true, spaces: 2, compact: true });
+      const xml = toXml(this.state.data);
       writeFileSync(resolvedXml, xml);
 
       const command = `${resolvedTool} --kotor ${resolvedXml} ${resolvedGui}`;

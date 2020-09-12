@@ -1,24 +1,32 @@
 {
   "name": "electron-webpack-quick-start",
-  "version": "0.0.0",
+  "author": {
+    "name": "Andrew McOlash",
+    "url": "https://amcolash.com"
+  },
+  "version": "0.0.1",
   "license": "MIT",
+  "repository": {
+    "url": "https://github.com/amcolash/kotor-gui-editor"
+  },
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder",
-    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+    "dist": "npm run compile && electron-builder",
+    "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null"
   },
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "source-map-support": "^0.5.16",
     "typestyle": "^2.1.0",
-    "xml-js": "^1.6.11"
+    "xml2json": "^0.12.0"
   },
   "devDependencies": {
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/react": "^16.9.49",
     "@types/react-dom": "^16.9.8",
+    "@types/xml2json": "^0.11.3",
     "electron": "8.2.0",
     "electron-builder": "^22.4.1",
     "electron-devtools-installer": "^3.1.1",
