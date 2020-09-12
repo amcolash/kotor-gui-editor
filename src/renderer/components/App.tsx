@@ -1,9 +1,14 @@
 import { spawnSync } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { remote } from 'electron';
+import { exists, existsSync, readFileSync } from 'fs';
+import { emptyDir, mkdirp } from 'fs-extra';
+import * as klaw from 'klaw';
 import { writeFileSync } from 'original-fs';
-import { resolve } from 'path';
+import { basename, join, resolve } from 'path';
 import React from 'react';
+import * as tga2png from 'tga2png';
 import { cssRule } from 'typestyle';
+import { promisify } from 'util';
 import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
@@ -15,6 +20,7 @@ cssRule('body', {
   margin: 0,
   overflow: 'hidden',
   background: 'white',
+  fontFamily: 'sans-serif',
 });
 
 interface AppState {
@@ -23,7 +29,14 @@ interface AppState {
   guiFile?: string;
   data: any;
   selected?: any;
+  extracting?: string;
 }
+
+const emptyDirAsync = promisify(emptyDir);
+const existsAsync = promisify(exists);
+const mkdirpAsync = promisify(mkdirp);
+
+const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 
 export default class App extends React.Component<{}, AppState> {
   state: AppState = {
@@ -33,7 +46,9 @@ export default class App extends React.Component<{}, AppState> {
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
 
+  // TODO: Only for dev
   public componentDidMount() {
+    this.extractPng();
     this.loadGff();
   }
 
@@ -41,15 +56,44 @@ export default class App extends React.Component<{}, AppState> {
     return this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile);
   };
 
+  private extractPng = async (clear?: boolean) => {
+    if (this.state.tgaPath) {
+      this.setState({ extracting: '' });
+
+      const resolvedTgaPath = resolve(this.state.tgaPath);
+      const items: klaw.Item[] = await new Promise((resolve, reject) => {
+        let items: klaw.Item[] = [];
+        klaw(resolvedTgaPath)
+          .on('data', (item) => {
+            if (item.stats.isFile() && item.path.endsWith('.tga')) items.push(item);
+          })
+          .on('end', () => resolve(items))
+          .on('error', (err: any) => reject(err));
+      });
+
+      const destDir = join(tmpDir, 'pngs');
+      await mkdirpAsync(destDir);
+      if (clear) emptyDirAsync(destDir);
+
+      for (let i = 0; i < items.length; i++) {
+        this.setState({ extracting: `(${i + 1}/${items.length})` });
+
+        const dest = join(destDir, basename(items[i].path.replace('.tpc.tga', '.png').replace('.tga', '.png')));
+        if (!(await existsAsync(dest))) await await tga2png(items[i].path, dest);
+      }
+
+      this.setState({ extracting: undefined });
+    }
+  };
+
   private loadGff = () => {
     if (this.checkPaths()) {
       const resolvedTool = resolve(this.state.toolsPath!, 'gff2xml');
       const resolvedGui = resolve(this.state.guiFile!);
-      const resolvedXml = resolve(this.state.guiFile! + '-loaded.xml');
+      const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
 
-      const command = `${resolvedTool} --kotor ${resolvedGui} ${resolvedXml}`;
-
-      var s = spawnSync(command);
+      const args = ['--kotor', resolvedGui, resolvedXml];
+      const s = spawnSync(resolvedTool, args);
       if (s.stdout) console.log(s.stdout.toString());
       if (s.stderr) console.error(s.stderr.toString());
 
@@ -71,26 +115,32 @@ export default class App extends React.Component<{}, AppState> {
   private saveGff = () => {
     if (this.checkPaths()) {
       const resolvedTool = resolve(this.state.toolsPath!, 'xml2gff');
+      const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-saved.xml'));
       const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
-      const resolvedXml = resolve(this.state.guiFile! + '-saved.xml');
 
       const xml = toXml(this.state.data);
       writeFileSync(resolvedXml, xml);
 
-      const command = `${resolvedTool} --kotor ${resolvedXml} ${resolvedGui}`;
-
-      var s = spawnSync(command);
+      const args = ['--kotor', resolvedXml, resolvedGui];
+      const s = spawnSync(resolvedTool, args);
       if (s.stdout) console.log(s.stdout.toString());
       if (s.stderr) console.error(s.stderr.toString());
     }
   };
 
   public render() {
+    if (this.state.extracting) {
+      return (
+        <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <h2>Extracting PNGs from TGAs, please wait... {this.state.extracting}</h2>
+        </div>
+      );
+    }
+
     return (
       <div
         className="mainContainer"
         style={{
-          fontFamily: 'sans-serif',
           padding: 10,
           width: 'calc(100vw - 20px)',
           height: 'calc(100vh - 20px)',
@@ -115,6 +165,7 @@ export default class App extends React.Component<{}, AppState> {
           updateFile={(file) => {
             this.setState({ tgaPath: file }, () => {
               localStorage.setItem('tgaPath', file);
+              this.extractPng();
             });
           }}
         />

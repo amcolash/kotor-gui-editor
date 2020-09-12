@@ -8,6 +8,16 @@ interface ScreenProps {
 
 export default class Screen extends React.Component<ScreenProps> {
   private makeNode(data: any): JSX.Element {
+    let label: string = '';
+    if (data.exostring) {
+      if (data.exostring.label === 'TAG') label = data.exostring.$t;
+      else if (Array.isArray(data.exostring)) {
+        data.exostring.forEach((e: any) => {
+          if (e.label === 'TAG') label = e.$t;
+        });
+      }
+    }
+
     let style: CSSProperties = {};
     if (data.struct) {
       data.struct.forEach((s: any) => {
@@ -35,10 +45,12 @@ export default class Screen extends React.Component<ScreenProps> {
     return (
       <div
         onClick={(e) => {
+          console.log(e.target);
+          if (data !== this.props.selected) e.stopPropagation();
           this.props.updateSelected(data);
-          e.stopPropagation();
         }}
         style={style}
+        key={label}
       >
         {children && <div>{children}</div>}
       </div>
