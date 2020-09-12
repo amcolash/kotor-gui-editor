@@ -39,6 +39,10 @@ export default class App extends React.Component<{}, AppState> {
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
 
+  public componentDidMount() {
+    this.loadGff();
+  }
+
   private checkPaths = () => {
     return this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile);
   };
