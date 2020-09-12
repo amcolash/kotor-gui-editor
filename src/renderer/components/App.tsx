@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'fs';
 import { writeFileSync } from 'original-fs';
 import { resolve } from 'path';
 import React from 'react';
-import { cssRule, style } from 'typestyle';
+import { cssRule } from 'typestyle';
 import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
@@ -14,15 +14,6 @@ cssRule('body', {
   margin: 0,
   overflow: 'hidden',
   background: 'white',
-});
-
-const className = style({
-  fontFamily: 'sans-serif',
-  padding: 10,
-  width: 'calc(100vw - 20px)',
-  height: 'calc(100vh - 20px)',
-  display: 'flex',
-  flexDirection: 'column',
 });
 
 interface AppState {
@@ -95,7 +86,16 @@ export default class App extends React.Component<{}, AppState> {
 
   public render() {
     return (
-      <div className={className}>
+      <div
+        style={{
+          fontFamily: 'sans-serif',
+          padding: 10,
+          width: 'calc(100vw - 20px)',
+          height: 'calc(100vh - 20px)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         <FilePicker
           label="Tools Path"
           file={this.state.toolsPath}

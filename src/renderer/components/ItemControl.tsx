@@ -1,5 +1,14 @@
 import React from 'react';
 import * as tinycolor from 'tinycolor2';
+import { style } from 'typestyle';
+
+const structName = style({
+  marginLeft: 14,
+});
+
+const itemStyle = style({
+  padding: 4,
+});
 
 interface ItemControlProps {
   selected?: any;
@@ -26,7 +35,7 @@ export default class ItemControl extends React.Component<ItemControlProps> {
         control = <input type="number" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
         break;
       case 'struct':
-        control = <div style={{ marginLeft: 14 }}>{this.makeControls(data)}</div>;
+        control = <div className={structName}>{this.makeControls(data)}</div>;
         break;
       case 'vector':
         control = data.double.map((d: any, i: number) => (
@@ -71,7 +80,7 @@ export default class ItemControl extends React.Component<ItemControlProps> {
     }
 
     return (
-      <div key={label} style={{ padding: 4 }}>
+      <div key={label} className={itemStyle}>
         {label}: {control}
       </div>
     );

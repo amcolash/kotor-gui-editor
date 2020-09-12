@@ -1,7 +1,17 @@
 import React from 'react';
+import { cssRule } from 'typestyle';
+
+cssRule('.tree', {
+  padding: 2,
+  $nest: {
+    '&.selected': {
+      backgroundColor: 'lime',
+    },
+  },
+});
 
 interface TreeProps {
-  data: any; // TODO
+  data: any; // TODO Typedefs
   selected?: any;
   updateSelected: (data: any) => void;
 }
@@ -33,7 +43,7 @@ export default class Tree extends React.Component<TreeProps> {
         }}
         key={label}
       >
-        <label style={{ backgroundColor: data === this.props.selected ? 'lime' : undefined, padding: 3 }}>{label}</label>
+        <div className={data === this.props.selected ? 'tree selected' : 'tree'}>{label}</div>
         {children && <div style={{ marginLeft: 14 }}>{children}</div>}
       </div>
     );
