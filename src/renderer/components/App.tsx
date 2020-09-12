@@ -1,11 +1,13 @@
-import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { spawnSync } from 'child_process';
+import { existsSync, readFileSync } from 'fs';
+import { writeFileSync } from 'original-fs';
 import { resolve } from 'path';
 import React from 'react';
 import { cssRule, style } from 'typestyle';
-import { parseString } from 'xml2js';
+import { js2xml, xml2js } from 'xml-js';
 import Button from './Button';
 import FilePicker from './FilePicker';
+import Tree from './Tree';
 
 cssRule('body', {
   margin: 0,
@@ -15,51 +17,75 @@ cssRule('body', {
 
 const className = style({
   fontFamily: 'sans-serif',
-  width: '100vw',
-  height: '100vh',
+  padding: 10,
+  width: 'calc(100vw - 20px)',
+  height: 'calc(100vh - 20px)',
   display: 'flex',
   flexDirection: 'column',
 });
 
 interface AppState {
   toolsPath?: string;
+  tgaPath?: string;
   guiFile?: string;
+  data: any;
 }
 
 export default class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
 
-    const localState = localStorage.getItem('state');
-    if (localState) {
-      this.state = JSON.parse(localState);
-    } else {
-      this.state = {};
-    }
+    const toolsPath = localStorage.getItem('toolsPath') || undefined;
+    const tgaPath = localStorage.getItem('tgaPath') || undefined;
+    const guiFile = localStorage.getItem('guiFile') || undefined;
+
+    this.state = {
+      data: '',
+      toolsPath,
+      tgaPath,
+      guiFile,
+    };
   }
 
-  private updateFilePath = (state: Partial<AppState>) => {
-    this.setState(state, () => {
-      localStorage.setItem('state', JSON.stringify(this.state));
-    });
+  private checkPaths = () => {
+    return this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile);
   };
 
   private loadGff = () => {
-    if (this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile)) {
-      const resolvedTool = resolve(this.state.toolsPath, 'gff2xml');
-      const resolvedGui = resolve(this.state.guiFile);
+    if (this.checkPaths()) {
+      const resolvedTool = resolve(this.state.toolsPath!, 'gff2xml');
+      const resolvedGui = resolve(this.state.guiFile!);
+      const resolvedXml = resolve(this.state.guiFile! + '-loaded.xml');
 
-      const command = `${resolvedTool} ${resolvedGui}`;
-      const buff = execSync(command);
+      const command = `${resolvedTool} --kotor ${resolvedGui} ${resolvedXml}`;
 
-      parseString(buff.toString(), (err, res) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
+      var s = spawnSync(command);
+      if (s.stdout) console.log(s.stdout.toString());
+      if (s.stderr) console.error(s.stderr.toString());
 
-        console.log(res);
-      });
+      const xml = readFileSync(resolvedXml);
+
+      const data = xml2js(xml.toString(), { compact: true });
+      this.setState({ data });
+
+      console.log('data', data);
+    }
+  };
+
+  private saveGff = () => {
+    if (this.checkPaths()) {
+      const resolvedTool = resolve(this.state.toolsPath!, 'xml2gff');
+      const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
+      const resolvedXml = resolve(this.state.guiFile! + '-saved.xml');
+
+      const xml = js2xml(this.state.data, { fullTagEmptyElement: true, spaces: 2, compact: true });
+      writeFileSync(resolvedXml, xml);
+
+      const command = `${resolvedTool} --kotor ${resolvedXml} ${resolvedGui}`;
+
+      var s = spawnSync(command);
+      if (s.stdout) console.log(s.stdout.toString());
+      if (s.stderr) console.error(s.stderr.toString());
     }
   };
 
@@ -70,10 +96,36 @@ export default class App extends React.Component<{}, AppState> {
           label="Tools Path"
           file={this.state.toolsPath}
           filter="directory"
-          updateFile={(file) => this.updateFilePath({ toolsPath: file })}
+          updateFile={(file) => {
+            this.setState({ toolsPath: file }, () => {
+              localStorage.setItem('toolsPath', file);
+            });
+          }}
         />
-        <FilePicker label="GUI File" file={this.state.guiFile} filter="gui" updateFile={(file) => this.updateFilePath({ guiFile: file })} />
+        <FilePicker
+          label="TGA Path"
+          file={this.state.tgaPath}
+          filter="directory"
+          updateFile={(file) => {
+            this.setState({ tgaPath: file }, () => {
+              localStorage.setItem('tgaPath', file);
+            });
+          }}
+        />
+        <FilePicker
+          label="GUI File"
+          file={this.state.guiFile}
+          filter="gui"
+          updateFile={(file) => {
+            this.setState({ guiFile: file }, () => {
+              localStorage.setItem('guiFile', file);
+            });
+          }}
+        />
         <Button onClick={this.loadGff}>Load</Button>
+        <Button onClick={this.saveGff}>Save</Button>
+
+        {this.state.data && <Tree data={this.state.data} />}
       </div>
     );
   }

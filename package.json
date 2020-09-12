@@ -13,13 +13,12 @@
     "react-dom": "^16.13.1",
     "source-map-support": "^0.5.16",
     "typestyle": "^2.1.0",
-    "xml2js": "^0.4.23"
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/react": "^16.9.49",
     "@types/react-dom": "^16.9.8",
-    "@types/xml2js": "^0.4.5",
     "electron": "8.2.0",
     "electron-builder": "^22.4.1",
     "electron-devtools-installer": "^3.1.1",
