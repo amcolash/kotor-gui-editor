@@ -1,7 +1,8 @@
 {
   "extends": "./node_modules/electron-webpack/tsconfig-base.json",
   "compilerOptions": {
-    "jsx": "react"
+    "jsx": "react",
+    "typeRoots": ["src/custom-types", "node_modules/@types"]
   },
   "include": ["src/**/*"]
 }
