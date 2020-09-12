@@ -7,6 +7,7 @@ import { cssRule, style } from 'typestyle';
 import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
+import ItemControl from './ItemControl';
 import Tree from './Tree';
 
 cssRule('body', {
@@ -29,6 +30,7 @@ interface AppState {
   tgaPath?: string;
   guiFile?: string;
   data: any;
+  selected?: any;
 }
 
 export default class App extends React.Component<{}, AppState> {
@@ -61,7 +63,13 @@ export default class App extends React.Component<{}, AppState> {
 
       const xml = readFileSync(resolvedXml);
 
-      const data = toJson(xml, { object: true, reversible: true, sanitize: true, trim: true });
+      const data = toJson(xml, {
+        object: true,
+        reversible: true,
+        sanitize: true,
+        trim: true,
+        arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
+      });
       this.setState({ data });
 
       console.log('data', data);
@@ -121,7 +129,15 @@ export default class App extends React.Component<{}, AppState> {
         <Button onClick={this.loadGff}>Load</Button>
         <Button onClick={this.saveGff}>Save</Button>
 
-        {this.state.data && <Tree data={this.state.data} />}
+        <div style={{ display: 'flex', minHeight: 0 }}>
+          {this.state.data && (
+            <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
+          )}
+          <div style={{ flex: 1 }}></div>
+          {this.state.selected && (
+            <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
+          )}
+        </div>
       </div>
     );
   }
