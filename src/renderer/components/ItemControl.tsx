@@ -13,11 +13,11 @@ export default class ItemControl extends React.Component<ItemControlProps> {
 
     switch (type) {
       case 'id':
-        control = <input type="text" value={data} onChange={(e) => cb(e.target.value)} />;
+        control = <input type="text" value={data || ''} onChange={(e) => cb(e.target.value)} />;
         break;
       case 'exostring':
       case 'resref':
-        control = <input type="text" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
+        control = <input type="text" value={data.$t || ''} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
         break;
       case 'byte':
         control = <input type="checkbox" checked={data.$t === '1'} onChange={(e) => cb({ ...data, $t: e.target.checked ? '1' : '0' })} />;
@@ -29,8 +29,6 @@ export default class ItemControl extends React.Component<ItemControlProps> {
         control = <div style={{ marginLeft: 14 }}>{this.makeControls(data)}</div>;
         break;
       case 'vector':
-        console.log(data);
-
         control = data.double.map((d: any, i: number) => (
           <input
             type="number"
@@ -53,6 +51,7 @@ export default class ItemControl extends React.Component<ItemControlProps> {
             <input
               type="color"
               value={hex}
+              key="picker"
               onChange={(e) => {
                 const updated = { ...data };
                 const rgb = tinycolor(e.target.value).toRgb();
@@ -103,7 +102,6 @@ export default class ItemControl extends React.Component<ItemControlProps> {
   }
 
   public render() {
-    console.log(this.props.selected);
     return (
       this.props.selected && (
         <div style={{ width: '20%', overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
