@@ -4,10 +4,13 @@ import React, { CSSProperties } from 'react';
 import { tmpDir } from './App';
 
 const imageCache: { [key: string]: string } = {};
+const zoom = 0.6;
+let coords = { x: 0, y: 0 };
 
 interface ScreenProps {
   data: any; // TODO Typedefs
   selected?: any;
+  updateData: (data: any) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
   updateSelected: (data: any) => void;
 }
 
@@ -76,12 +79,36 @@ export default class Screen extends React.Component<ScreenProps> {
     return (
       <div
         onClick={(e) => {
-          // console.log(e.target);
           if (data !== this.props.selected) e.stopPropagation();
           this.props.updateSelected(data);
         }}
         style={style}
         key={label}
+        draggable={data === this.props.selected}
+        onDragStart={(e) => {
+          if (data !== this.props.selected) return;
+
+          coords.x = e.clientX;
+          coords.y = e.clientY;
+        }}
+        onDragEnd={(e) => {
+          if (data !== this.props.selected) return;
+
+          const diffX = (coords.x - e.clientX) / zoom;
+          const diffY = (coords.y - e.clientY) / zoom;
+
+          console.log(diffX, diffY);
+
+          data.struct.forEach((s: any) => {
+            if (s.label === 'EXTENT') {
+              s.sint32.forEach((s: any) => {
+                if (s.label === 'TOP') s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
+                if (s.label === 'LEFT') s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
+              });
+              this.props.updateData(this.props.data);
+            }
+          });
+        }}
       >
         {children && <div>{children}</div>}
       </div>
@@ -93,7 +120,7 @@ export default class Screen extends React.Component<ScreenProps> {
     return (
       <div
         className="screen"
-        style={{ flex: 1, margin: 4, position: 'relative', zoom: 0.6 }}
+        style={{ flex: 1, margin: 4, position: 'relative', zoom }}
         onClick={() => this.props.updateSelected(undefined)}
       >
         {this.makeNode(root)}

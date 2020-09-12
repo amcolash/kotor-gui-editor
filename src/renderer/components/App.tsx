@@ -187,7 +187,12 @@ export default class App extends React.Component<{}, AppState> {
         {this.state.data && (
           <div style={{ display: 'flex', minHeight: 0 }}>
             <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
-            <Screen data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
+            <Screen
+              data={this.state.data}
+              selected={this.state.selected}
+              updateSelected={(selected: any) => this.setState({ selected })}
+              updateData={(data) => this.setState(data)}
+            />
             {this.state.selected && (
               <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
             )}
