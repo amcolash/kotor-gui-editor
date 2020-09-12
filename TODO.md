@@ -1,0 +1,15 @@
+- [ ] Undo stack
+- [ ] Clean up UI
+- [ ] Collapse Settings UI Tweaks
+- [ ] Proper zoom scaling for screen view
+- [ ] Resize Drag Handles
+- [ ] Refresh .png cache
+- [ ] Extract .tpc files?
+- [ ] Add a changelog
+- [ ] Github/Travis CI builds
+- [ ] Write typedefs (at least partially)
+- [ ] Better drag icons
+- [ ] Math in numeric input boxes
+- [ ] Display primitive types like K-GFF
+- [ ] Render other types of things? Borders for example
+- [ ] Icons + Name (maybe KGE - kotor gui editor)
