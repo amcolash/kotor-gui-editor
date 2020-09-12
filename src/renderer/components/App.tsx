@@ -36,7 +36,7 @@ const emptyDirAsync = promisify(emptyDir);
 const existsAsync = promisify(exists);
 const mkdirpAsync = promisify(mkdirp);
 
-const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
+export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 
 export default class App extends React.Component<{}, AppState> {
   state: AppState = {

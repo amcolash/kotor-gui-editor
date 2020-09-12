@@ -113,7 +113,7 @@ export default class ItemControl extends React.Component<ItemControlProps> {
   public render() {
     return (
       this.props.selected && (
-        <div className="itemBar" style={{ width: '20%', overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
+        <div className="itemBar" style={{ width: 250, overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
           {this.makeControls(this.props.selected)}
         </div>
       )

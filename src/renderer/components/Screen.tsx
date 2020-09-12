@@ -1,4 +1,6 @@
+import { join } from 'path';
 import React, { CSSProperties } from 'react';
+import { tmpDir } from './App';
 
 interface ScreenProps {
   data: any; // TODO Typedefs
@@ -24,12 +26,26 @@ export default class Screen extends React.Component<ScreenProps> {
         if (s.label === 'EXTENT') {
           style.border = '1px solid #555';
           style.position = 'absolute';
-          if (this.props.selected === data) style.outline = '1px solid lime';
+          if (this.props.selected === data) style.outline = '2px solid lime';
           s.sint32.forEach((s: any) => {
             if (s.label === 'TOP') style.top = parseInt(s.$t);
             if (s.label === 'LEFT') style.left = parseInt(s.$t);
             if (s.label === 'WIDTH') style.width = parseInt(s.$t);
             if (s.label === 'HEIGHT') style.height = parseInt(s.$t);
+          });
+        } else if (s.label === 'BORDER') {
+          let showImg = false;
+          s.sint32.forEach((s: any) => {
+            if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
+          });
+          s.resref.forEach((s: any) => {
+            if (s.label === 'FILL' && s.$t) {
+              const img = join(tmpDir, 'pngs', s.$t + '.png');
+              console.log(img);
+              style.backgroundImage = `url(file://${img})`;
+              style.backgroundRepeat = 'no-repeat';
+              style.backgroundSize = 'cover';
+            }
           });
         }
       });
@@ -45,7 +61,7 @@ export default class Screen extends React.Component<ScreenProps> {
     return (
       <div
         onClick={(e) => {
-          console.log(e.target);
+          // console.log(e.target);
           if (data !== this.props.selected) e.stopPropagation();
           this.props.updateSelected(data);
         }}
@@ -60,7 +76,7 @@ export default class Screen extends React.Component<ScreenProps> {
   public render() {
     const root = this.props.data.gff3.struct[0];
     return (
-      <div className="screen" style={{ flex: 1, margin: 4, border: '1px solid #ccc', position: 'relative', zoom: 0.365 }}>
+      <div className="screen" style={{ flex: 1, margin: 4, border: '1px solid #ccc', position: 'relative', zoom: 0.6 }}>
         {this.makeNode(root)}
       </div>
     );
