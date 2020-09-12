@@ -50,6 +50,11 @@ export default class Tree extends React.Component<TreeProps> {
   }
 
   public render() {
-    return <div style={{ width: '20%', whiteSpace: 'pre', overflowY: 'scroll' }}>{this.makeNode(this.props.data.gff3.struct[0])}</div>;
+    const root = this.props.data.gff3.struct[0];
+    return (
+      <div className="tree" style={{ width: '20%', whiteSpace: 'pre', overflowY: 'scroll' }}>
+        {this.makeNode(root)}
+      </div>
+    );
   }
 }

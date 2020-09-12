@@ -8,6 +8,7 @@ import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
 import ItemControl from './ItemControl';
+import Screen from './Screen';
 import Tree from './Tree';
 
 cssRule('body', {
@@ -87,6 +88,7 @@ export default class App extends React.Component<{}, AppState> {
   public render() {
     return (
       <div
+        className="mainContainer"
         style={{
           fontFamily: 'sans-serif',
           padding: 10,
@@ -129,15 +131,15 @@ export default class App extends React.Component<{}, AppState> {
         <Button onClick={this.loadGff}>Load</Button>
         <Button onClick={this.saveGff}>Save</Button>
 
-        <div style={{ display: 'flex', minHeight: 0 }}>
-          {this.state.data && (
+        {this.state.data && (
+          <div style={{ display: 'flex', minHeight: 0 }}>
             <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
-          )}
-          <div style={{ flex: 1 }}></div>
-          {this.state.selected && (
-            <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
-          )}
-        </div>
+            <Screen data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
+            {this.state.selected && (
+              <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
+            )}
+          </div>
+        )}
       </div>
     );
   }
