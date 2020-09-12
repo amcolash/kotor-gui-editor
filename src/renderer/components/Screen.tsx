@@ -1,6 +1,9 @@
+import { readFileSync } from 'fs';
 import { join } from 'path';
 import React, { CSSProperties } from 'react';
 import { tmpDir } from './App';
+
+const imageCache: { [key: string]: string } = {};
 
 interface ScreenProps {
   data: any; // TODO Typedefs
@@ -40,11 +43,23 @@ export default class Screen extends React.Component<ScreenProps> {
           });
           s.resref.forEach((s: any) => {
             if (s.label === 'FILL' && s.$t) {
-              const img = join(tmpDir, 'pngs', s.$t + '.png');
-              console.log(img);
-              style.backgroundImage = `url(file://${img})`;
               style.backgroundRepeat = 'no-repeat';
               style.backgroundSize = 'cover';
+
+              const img = join(tmpDir, 'pngs', s.$t + '.png');
+              if (!imageCache[img]) {
+                try {
+                  // Meh on perf here, but it should usually be a reasonably small amount of images
+                  const buf = readFileSync(img);
+                  imageCache[img] = 'data:image/png;base64,' + buf.toString('base64');
+                  style.backgroundImage = `url(${imageCache[img]})`;
+                } catch (e) {
+                  console.error(e);
+                  if (!imageCache[img]) imageCache[img] = 'error';
+                }
+              } else if (imageCache[img] !== 'error') {
+                style.backgroundImage = `url(${imageCache[img]})`;
+              }
             }
           });
         }
@@ -76,7 +91,11 @@ export default class Screen extends React.Component<ScreenProps> {
   public render() {
     const root = this.props.data.gff3.struct[0];
     return (
-      <div className="screen" style={{ flex: 1, margin: 4, border: '1px solid #ccc', position: 'relative', zoom: 0.6 }}>
+      <div
+        className="screen"
+        style={{ flex: 1, margin: 4, position: 'relative', zoom: 0.6 }}
+        onClick={() => this.props.updateSelected(undefined)}
+      >
         {this.makeNode(root)}
       </div>
     );

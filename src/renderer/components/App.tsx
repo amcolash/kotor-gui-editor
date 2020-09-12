@@ -1,9 +1,8 @@
 import { spawnSync } from 'child_process';
 import { remote } from 'electron';
-import { exists, existsSync, readFileSync } from 'fs';
+import { exists, existsSync, readFile, readFileSync, writeFileSync } from 'fs';
 import { emptyDir, mkdirp } from 'fs-extra';
 import * as klaw from 'klaw';
-import { writeFileSync } from 'original-fs';
 import { basename, join, resolve } from 'path';
 import React from 'react';
 import * as tga2png from 'tga2png';
@@ -32,9 +31,10 @@ interface AppState {
   extracting?: string;
 }
 
-const emptyDirAsync = promisify(emptyDir);
-const existsAsync = promisify(exists);
-const mkdirpAsync = promisify(mkdirp);
+export const emptyDirAsync = promisify(emptyDir);
+export const existsAsync = promisify(exists);
+export const mkdirpAsync = promisify(mkdirp);
+export const readFileAsync = promisify(readFile);
 
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 
@@ -48,8 +48,9 @@ export default class App extends React.Component<{}, AppState> {
 
   // TODO: Only for dev
   public componentDidMount() {
-    this.extractPng();
-    this.loadGff();
+    this.extractPng().then(() => {
+      this.loadGff();
+    });
   }
 
   private checkPaths = () => {
@@ -176,6 +177,7 @@ export default class App extends React.Component<{}, AppState> {
           updateFile={(file) => {
             this.setState({ guiFile: file }, () => {
               localStorage.setItem('guiFile', file);
+              this.loadGff();
             });
           }}
         />

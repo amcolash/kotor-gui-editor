@@ -3,9 +3,13 @@ import { cssRule } from 'typestyle';
 
 cssRule('.tree', {
   padding: 2,
+  cursor: 'pointer',
   $nest: {
     '&.selected': {
       backgroundColor: 'lime',
+    },
+    '&:hover': {
+      outline: '1px solid #ccc',
     },
   },
 });
@@ -17,6 +21,11 @@ interface TreeProps {
 }
 
 export default class Tree extends React.Component<TreeProps> {
+  public componentDidUpdate() {
+    const selected = document.querySelector('.selected');
+    if (selected) selected.scrollIntoView();
+  }
+
   private makeNode(data: any): JSX.Element {
     let label: string = '';
     if (data.exostring) {
