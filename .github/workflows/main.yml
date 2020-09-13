@@ -1,14 +1,11 @@
 name: CI
 
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    on:
+      push:
+        branches: [master]
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -18,6 +15,23 @@ jobs:
           node-version: '12'
       - run: npm install
       - run: npm run release
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+  verify:
+    runs-on: ${{ matrix.os }}
+    on:
+      pull_requests:
+        branches: [master]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+      - run: npm install
+      - run: npm run compile
 
     strategy:
       matrix:

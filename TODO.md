@@ -16,3 +16,4 @@
   - [x] Protoitems
   - [x] Scrollbars
   - [ ] Borders
+- [ ] Automated tests? Maybe, but probably not...
