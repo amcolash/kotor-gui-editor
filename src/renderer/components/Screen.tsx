@@ -43,8 +43,8 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
 
   public getSnapshotBeforeUpdate(prevProps: ScreenProps, prevState: ScreenState): null {
     if (this.props.data !== prevProps.data) {
-      this.totalWidth = 0;
-      this.totalHeight = 0;
+      this.totalWidth = 1;
+      this.totalHeight = 1;
     }
 
     return null;
@@ -72,7 +72,11 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
       }
     }
 
+    // Children are true child elements, pseudoChildren are nested structs like PROTOITEM/SCROLLBAR
+    // It matters for proper preview layout (nested or sibling in DOM)
     const children: JSX.Element[] = [];
+    const pseudoChildren: JSX.Element[] = [];
+
     const style: CSSProperties = {};
     let width: number = 0;
     let height: number = 0;
@@ -182,7 +186,7 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
             }
           }
         } else if (s.label === 'PROTOITEM' || s.label === 'SCROLLBAR') {
-          children.push(this.makeNode(s));
+          pseudoChildren.push(this.makeNode(s));
         }
       });
     }
@@ -238,10 +242,10 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
             });
           }}
         >
-          {label === 'TGuiPanel' ? children : null}
+          {children}
         </div>
 
-        {label === 'TGuiPanel' ? null : children}
+        {pseudoChildren}
       </Fragment>
     );
   }
