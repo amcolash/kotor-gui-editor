@@ -7,7 +7,8 @@
   "version": "0.0.1",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/amcolash/kotor-gui-editor"
+    "type": "git",
+    "url": "https://github.com/amcolash/kotor-gui-editor.git"
   },
   "scripts": {
     "dev": "electron-webpack dev",
@@ -17,7 +18,7 @@
     "dist:linux": "npm run compile && electron-builder --linux",
     "dist:mac": "npm run compile && electron-builder --mac",
     "dist:windows": "npm run compile && electron-builder --win",
-    "publish": "npm run compile && electron-builder --publish always"
+    "release": "npm run dist"
   },
   "dependencies": {
     "klaw": "^3.0.0",
@@ -45,5 +46,10 @@
     "prettier": "^2.1.1",
     "typescript": "^4.0.2",
     "webpack": "~4.42.1"
+  },
+  "build": {
+    "publish": [
+      "github"
+    ]
   }
 }
