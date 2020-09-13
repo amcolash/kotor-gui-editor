@@ -1,6 +1,6 @@
 import { remote } from 'electron';
 import { existsSync } from 'fs';
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { style } from 'typestyle';
 
 const className = style({
@@ -26,6 +26,7 @@ interface FilePickerProps {
   label?: string;
   file?: string;
   filter?: string | 'directory';
+  style?: CSSProperties;
 }
 
 export default class FilePicker extends React.Component<FilePickerProps> {
@@ -49,7 +50,7 @@ export default class FilePicker extends React.Component<FilePickerProps> {
     const valid = this.props.file ? existsSync(this.props.file) : false;
 
     return (
-      <div className={className}>
+      <div className={className} style={this.props.style}>
         {this.props.label && <label>{this.props.label}</label>}
         <input value={this.props.file || ''} onClick={this.chooseFile} readOnly className={valid ? 'valid' : 'invalid'} />
       </div>

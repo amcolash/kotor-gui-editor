@@ -1,7 +1,7 @@
 import React from 'react';
 import { cssRule } from 'typestyle';
 
-cssRule('.tree', {
+cssRule('.treeItem', {
   padding: 2,
   cursor: 'pointer',
   $nest: {
@@ -45,17 +45,41 @@ export default class Tree extends React.Component<TreeProps> {
     }
 
     return (
-      <div
-        onClick={(e) => {
-          this.props.updateSelected(data);
-          e.stopPropagation();
-        }}
-        key={label}
-      >
-        <div className={data === this.props.selected ? 'tree selected' : 'tree'}>{label}</div>
+      <div key={label}>
+        <div
+          className={'treeItem' + (data === this.props.selected ? ' selected' : '')}
+          onFocus={(e) => {
+            this.props.updateSelected(data);
+            e.stopPropagation();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') this.focusItem(1);
+            if (e.key === 'ArrowUp') this.focusItem(-1);
+          }}
+          tabIndex={0}
+        >
+          {label}
+        </div>
         {children && <div style={{ marginLeft: 14 }}>{children}</div>}
       </div>
     );
+  }
+
+  private focusItem(dir: number): void {
+    const focusableEls: HTMLElement[] = Array.from(document.querySelectorAll('.treeItem'));
+
+    const activeElement = document.activeElement;
+    let index = 0;
+    if (activeElement) {
+      for (let i = 0; i < focusableEls.length; i++) {
+        if (focusableEls[i] === activeElement) index = i;
+      }
+    }
+
+    index += dir;
+    index = Math.max(0, Math.min(index, focusableEls.length - 1));
+
+    focusableEls[index].focus();
   }
 
   public render() {

@@ -74,13 +74,13 @@ export default class App extends React.Component<{}, AppState> {
 
       const destDir = join(tmpDir, 'pngs');
       await mkdirpAsync(destDir);
-      if (clear) emptyDirAsync(destDir);
+      if (clear) await emptyDirAsync(destDir);
 
       for (let i = 0; i < items.length; i++) {
         this.setState({ extracting: `(${i + 1}/${items.length})` });
 
         const dest = join(destDir, basename(items[i].path.replace('.tpc.tga', '.png').replace('.tga', '.png')));
-        if (!(await existsAsync(dest))) await await tga2png(items[i].path, dest);
+        if (!(await existsAsync(dest))) await tga2png(items[i].path, dest);
       }
 
       this.setState({ extracting: undefined });
@@ -159,17 +159,21 @@ export default class App extends React.Component<{}, AppState> {
             });
           }}
         />
-        <FilePicker
-          label="TGA Path"
-          file={this.state.tgaPath}
-          filter="directory"
-          updateFile={(file) => {
-            this.setState({ tgaPath: file }, () => {
-              localStorage.setItem('tgaPath', file);
-              this.extractPng();
-            });
-          }}
-        />
+        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <FilePicker
+            label="TGA Path"
+            file={this.state.tgaPath}
+            filter="directory"
+            updateFile={(file) => {
+              this.setState({ tgaPath: file }, () => {
+                localStorage.setItem('tgaPath', file);
+                this.extractPng(true);
+              });
+            }}
+            style={{ flex: 1 }}
+          />
+          <Button onClick={() => this.extractPng(true)}>Reload Assets</Button>
+        </div>
         <FilePicker
           label="GUI File"
           file={this.state.guiFile}
@@ -181,7 +185,7 @@ export default class App extends React.Component<{}, AppState> {
             });
           }}
         />
-        <Button onClick={this.loadGff}>Load</Button>
+        <Button onClick={this.loadGff}>Revert</Button>
         <Button onClick={this.saveGff}>Save</Button>
 
         {this.state.data && (

@@ -44,27 +44,30 @@ export default class Screen extends React.Component<ScreenProps> {
           s.sint32.forEach((s: any) => {
             if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
           });
-          s.resref.forEach((s: any) => {
-            if (s.label === 'FILL' && s.$t) {
-              style.backgroundRepeat = 'no-repeat';
-              style.backgroundSize = 'cover';
 
-              const img = join(tmpDir, 'pngs', s.$t + '.png');
-              if (!imageCache[img]) {
-                try {
-                  // Meh on perf here, but it should usually be a reasonably small amount of images
-                  const buf = readFileSync(img);
-                  imageCache[img] = 'data:image/png;base64,' + buf.toString('base64');
+          if (showImg) {
+            s.resref.forEach((s: any) => {
+              if (s.label === 'FILL' && s.$t) {
+                style.backgroundRepeat = 'no-repeat';
+                style.backgroundSize = 'cover';
+
+                const img = join(tmpDir, 'pngs', s.$t + '.png');
+                if (!imageCache[img]) {
+                  try {
+                    // Meh on perf here, but it should usually be a reasonably small amount of images
+                    const buf = readFileSync(img);
+                    imageCache[img] = 'data:image/png;base64,' + buf.toString('base64');
+                    style.backgroundImage = `url(${imageCache[img]})`;
+                  } catch (e) {
+                    console.error(e);
+                    if (!imageCache[img]) imageCache[img] = 'error';
+                  }
+                } else if (imageCache[img] !== 'error') {
                   style.backgroundImage = `url(${imageCache[img]})`;
-                } catch (e) {
-                  console.error(e);
-                  if (!imageCache[img]) imageCache[img] = 'error';
                 }
-              } else if (imageCache[img] !== 'error') {
-                style.backgroundImage = `url(${imageCache[img]})`;
               }
-            }
-          });
+            });
+          }
         }
       });
     }
