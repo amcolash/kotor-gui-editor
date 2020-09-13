@@ -1,27 +1,13 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import React, { createRef, CSSProperties } from 'react';
-import { ZoomIn, ZoomOut } from 'react-feather';
-import { style } from 'typestyle';
+import React, { createRef, CSSProperties, Fragment } from 'react';
 import { tmpDir } from './App';
 
 const imageCache: { [key: string]: string } = {};
 const dragImageCache: { [key: string]: HTMLImageElement } = {};
+const dragPadding: number = 6;
 
 let coords = { x: 0, y: 0 };
-
-const iconClass = style({
-  margin: 4,
-  padding: 4,
-  borderRadius: 4,
-  cursor: 'pointer',
-
-  $nest: {
-    '&:hover': {
-      background: '#eee',
-    },
-  },
-});
 
 interface ScreenProps {
   data: any; // TODO Typedefs
@@ -36,7 +22,7 @@ interface ScreenState {
 
 export default class Screen extends React.Component<ScreenProps, ScreenState> {
   state: ScreenState = {
-    zoom: 0.6,
+    zoom: 1,
   };
 
   totalWidth: number = 0;
@@ -49,13 +35,28 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     if (this.rootRef?.current) ro.observe(this.rootRef.current);
   }
 
+  public componentDidUpdate(prevProps: ScreenProps, prevState: ScreenState) {
+    if (this.state.zoom !== prevState.zoom || this.props.data !== prevProps.data) {
+      this.updateZoom();
+    }
+  }
+
+  public getSnapshotBeforeUpdate(prevProps: ScreenProps, prevState: ScreenState): null {
+    if (this.props.data !== prevProps.data) {
+      this.totalWidth = 0;
+      this.totalHeight = 0;
+    }
+
+    return null;
+  }
+
   private updateZoom = () => {
     if (this.rootRef?.current) {
       const bounds = this.rootRef.current.getBoundingClientRect();
       const ratioWidth = bounds.width / this.totalWidth;
       const ratioHeight = bounds.height / this.totalHeight;
 
-      this.setState({ zoom: Math.min(1, Math.min(ratioWidth, ratioHeight)) });
+      this.setState({ zoom: Math.min(ratioWidth, ratioHeight) });
     }
   };
 
@@ -65,12 +66,14 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
       if (data.exostring.label === 'TAG') label = data.exostring.$t;
       else if (Array.isArray(data.exostring)) {
         data.exostring.forEach((e: any) => {
-          if (e.label === 'TAG') label = e.$t;
+          if (e.label === 'TAG') label += e.$t;
+          if (e.label === 'Obj_Parent') label += e.$t;
         });
       }
     }
 
-    let style: CSSProperties = {};
+    const children: JSX.Element[] = [];
+    const style: CSSProperties = {};
     let width: number = 0;
     let height: number = 0;
 
@@ -127,16 +130,14 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
           }
 
           if (style) {
-            const w = Math.floor(width * this.state.zoom);
-            const h = Math.floor(height * this.state.zoom);
+            const w = Math.floor(width * this.state.zoom) + dragPadding;
+            const h = Math.floor(height * this.state.zoom) + dragPadding;
 
             const found = dragImageCache[label];
             if (found && found.width === w && found.height === h) return;
 
             const canvas = document.createElement('canvas');
             const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'lime';
 
             canvas.width = w;
             canvas.height = h;
@@ -149,8 +150,13 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
                 ctx.drawImage(e.target as HTMLImageElement, 0, 0, canvas.width, canvas.height);
 
                 ctx.beginPath();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = 'lime';
                 ctx.rect(0, 0, w, h);
                 ctx.stroke();
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(0,255,0,0.2)';
+                ctx.fillRect(0, 0, w, h);
 
                 const image = document.createElement('img');
                 image.src = canvas.toDataURL();
@@ -160,8 +166,13 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
               };
             } else {
               ctx.beginPath();
+              ctx.lineWidth = 4;
+              ctx.strokeStyle = 'lime';
               ctx.rect(0, 0, w, h);
               ctx.stroke();
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(0,255,0,0.2)';
+              ctx.fillRect(0, 0, w, h);
 
               const image = document.createElement('img');
               image.src = canvas.toDataURL();
@@ -170,11 +181,12 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
               };
             }
           }
+        } else if (s.label === 'PROTOITEM' || s.label === 'SCROLLBAR') {
+          children.push(this.makeNode(s));
         }
       });
     }
 
-    const children: JSX.Element[] = [];
     if (data.list && data.list.struct) {
       data.list.struct.forEach((e: any) => {
         children.push(this.makeNode(e));
@@ -182,62 +194,53 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     }
 
     return (
-      <div
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          if (data !== this.props.selected) this.props.updateSelected(data);
-        }}
-        style={style}
-        key={label}
-        id={label}
-        draggable={data === this.props.selected}
-        onDragStart={(e) => {
-          // console.log(e.target);
+      <Fragment>
+        <div
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            if (data !== this.props.selected) this.props.updateSelected(data);
+          }}
+          style={style}
+          key={label}
+          id={label}
+          draggable={data === this.props.selected}
+          onDragStart={(e) => {
+            // console.log(e.target);
+            if (data !== this.props.selected) return;
 
-          if (data !== this.props.selected) return;
+            coords.x = e.clientX;
+            coords.y = e.clientY;
 
-          coords.x = e.clientX;
-          coords.y = e.clientY;
+            const bounds = (e.target as HTMLElement).getBoundingClientRect();
+            const offsetX = e.clientX - bounds.left * this.state.zoom + dragPadding / 2;
+            const offsetY = e.clientY - bounds.top * this.state.zoom + dragPadding / 2;
 
-          let label: string = '';
-          if (data.exostring) {
-            if (data.exostring.label === 'TAG') label = data.exostring.$t;
-            else if (Array.isArray(data.exostring)) {
-              data.exostring.forEach((e: any) => {
-                if (e.label === 'TAG') label = e.$t;
-              });
-            }
-          }
+            // console.log(bounds, offsetX, offsetY, e.clientX, e.clientY);
 
-          const bounds = (e.target as HTMLElement).getBoundingClientRect();
-          const offsetX = e.clientX - bounds.left * this.state.zoom;
-          const offsetY = e.clientY - bounds.top * this.state.zoom;
+            e.dataTransfer.setDragImage(dragImageCache[label], offsetX, offsetY);
+          }}
+          onDragEnd={(e) => {
+            if (data !== this.props.selected) return;
 
-          // console.log(bounds, offsetX, offsetY, e.clientX, e.clientY);
+            const diffX = (coords.x - e.clientX) / this.state.zoom;
+            const diffY = (coords.y - e.clientY) / this.state.zoom;
 
-          e.dataTransfer.setDragImage(dragImageCache[label], offsetX, offsetY);
-        }}
-        onDragEnd={(e) => {
-          if (data !== this.props.selected) return;
+            // console.log(diffX, diffY);
 
-          const diffX = (coords.x - e.clientX) / this.state.zoom;
-          const diffY = (coords.y - e.clientY) / this.state.zoom;
+            data.struct.forEach((s: any) => {
+              if (s.label === 'EXTENT') {
+                s.sint32.forEach((s: any) => {
+                  if (s.label === 'TOP') s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
+                  if (s.label === 'LEFT') s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
+                });
+                this.props.updateData(this.props.data);
+              }
+            });
+          }}
+        />
 
-          // console.log(diffX, diffY);
-
-          data.struct.forEach((s: any) => {
-            if (s.label === 'EXTENT') {
-              s.sint32.forEach((s: any) => {
-                if (s.label === 'TOP') s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
-                if (s.label === 'LEFT') s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
-              });
-              this.props.updateData(this.props.data);
-            }
-          });
-        }}
-      >
-        {children && <div>{children}</div>}
-      </div>
+        {children}
+      </Fragment>
     );
   }
 
@@ -246,7 +249,7 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     return (
       <div
         className="screen"
-        style={{ flex: 1, margin: 4, position: 'relative', overflow: 'hidden' }}
+        style={{ flex: 1, margin: '0 8px', position: 'relative', overflow: 'hidden' }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).parentElement?.className === 'zoom') return;
           this.props.updateSelected(undefined);
@@ -254,22 +257,6 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
         ref={this.rootRef}
       >
         <div style={{ zoom: this.state.zoom }}>{this.makeNode(root)}</div>
-        <div
-          style={{
-            position: 'absolute',
-            top: 10,
-            right: 10,
-            display: 'flex',
-            padding: 5,
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: 4,
-            border: '1px solid #ccc',
-          }}
-          className="zoom"
-        >
-          <ZoomOut size="20" className={iconClass} onClick={() => this.setState({ zoom: this.state.zoom -= 0.1 })} />
-          <ZoomIn size="20" className={iconClass} onClick={() => this.setState({ zoom: this.state.zoom += 0.1 })} />
-        </div>
       </div>
     );
   }

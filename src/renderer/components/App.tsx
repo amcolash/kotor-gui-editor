@@ -202,9 +202,7 @@ export default class App extends React.Component<{}, AppState> {
               updateSelected={(selected: any) => this.setState({ selected })}
               updateData={(data) => this.setState(data)}
             />
-            {this.state.selected && (
-              <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
-            )}
+            <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
           </div>
         )}
       </div>
