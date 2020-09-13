@@ -17,6 +17,12 @@ interface ItemControlProps {
 }
 
 export default class ItemControl extends React.Component<ItemControlProps> {
+  ref: React.RefObject<HTMLDivElement> = React.createRef();
+
+  public componentDidUpdate() {
+    if (this.ref?.current) this.ref.current.scrollTop = 0;
+  }
+
   private makeControl(type: string, label: string, data: any, cb: (newData: any) => void): JSX.Element | undefined {
     let control;
 
@@ -115,7 +121,7 @@ export default class ItemControl extends React.Component<ItemControlProps> {
 
   public render() {
     return (
-      <div className="itemBar" style={{ width: 250, overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
+      <div className="itemBar" ref={this.ref} style={{ width: 250, overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
         {this.props.selected && this.makeControls(this.props.selected)}
       </div>
     );

@@ -13,7 +13,10 @@
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
     "dist": "npm run compile && electron-builder",
-    "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null"
+    "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null",
+    "dist:linux": "npm run compile && electron-builder --linux",
+    "dist:mac": "npm run compile && electron-builder --mac",
+    "dist:windows": "npm run compile && electron-builder --win"
   },
   "dependencies": {
     "klaw": "^3.0.0",

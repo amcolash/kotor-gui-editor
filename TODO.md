@@ -12,4 +12,7 @@
 - [x] Better drag icons
 - [ ] Math in numeric input boxes
 - [ ] Display primitive types like K-GFF
-- [ ] Render other types of things? Borders for example
+- [ ] Render other types of things?
+  - [x] Protoitems
+  - [x] Scrollbars
+  - [ ] Borders

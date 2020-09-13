@@ -194,7 +194,7 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     }
 
     return (
-      <Fragment>
+      <Fragment key={label}>
         <div
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -237,9 +237,11 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
               }
             });
           }}
-        />
+        >
+          {label === 'TGuiPanel' ? children : null}
+        </div>
 
-        {children}
+        {label === 'TGuiPanel' ? null : children}
       </Fragment>
     );
   }
