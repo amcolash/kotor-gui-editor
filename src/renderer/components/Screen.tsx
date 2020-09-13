@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import React, { CSSProperties } from 'react';
+import React, { createRef, CSSProperties } from 'react';
 import { ZoomIn, ZoomOut } from 'react-feather';
 import { style } from 'typestyle';
 import { tmpDir } from './App';
@@ -39,6 +39,26 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     zoom: 0.6,
   };
 
+  totalWidth: number = 0;
+  totalHeight: number = 0;
+
+  rootRef: React.RefObject<HTMLDivElement> = createRef();
+
+  public componentDidMount() {
+    const ro = new ResizeObserver(this.updateZoom);
+    if (this.rootRef?.current) ro.observe(this.rootRef.current);
+  }
+
+  private updateZoom = () => {
+    if (this.rootRef?.current) {
+      const bounds = this.rootRef.current.getBoundingClientRect();
+      const ratioWidth = bounds.width / this.totalWidth;
+      const ratioHeight = bounds.height / this.totalHeight;
+
+      this.setState({ zoom: Math.min(1, Math.min(ratioWidth, ratioHeight)) });
+    }
+  };
+
   private makeNode(data: any): JSX.Element {
     let label: string = '';
     if (data.exostring) {
@@ -72,6 +92,9 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
               height = style.height;
             }
           });
+
+          this.totalWidth = Math.max(this.totalWidth, (style.left as number) + (style.width as number));
+          this.totalHeight = Math.max(this.totalHeight, (style.top as number) + (style.height as number));
         } else if (s.label === 'BORDER') {
           let showImg = false;
           s.sint32.forEach((s: any) => {
@@ -224,7 +247,11 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
       <div
         className="screen"
         style={{ flex: 1, margin: 4, position: 'relative', overflow: 'hidden' }}
-        onMouseDown={() => this.props.updateSelected(undefined)}
+        onMouseDown={(e) => {
+          if ((e.target as HTMLElement).parentElement?.className === 'zoom') return;
+          this.props.updateSelected(undefined);
+        }}
+        ref={this.rootRef}
       >
         <div style={{ zoom: this.state.zoom }}>{this.makeNode(root)}</div>
         <div
@@ -238,6 +265,7 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
             borderRadius: 4,
             border: '1px solid #ccc',
           }}
+          className="zoom"
         >
           <ZoomOut size="20" className={iconClass} onClick={() => this.setState({ zoom: this.state.zoom -= 0.1 })} />
           <ZoomIn size="20" className={iconClass} onClick={() => this.setState({ zoom: this.state.zoom += 0.1 })} />
