@@ -8,7 +8,8 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 let mainWindow: BrowserWindow | null;
 
 function createMainWindow() {
-  const window = new BrowserWindow({ webPreferences: { nodeIntegration: true }, width: 1200, height: 750 });
+  const window = new BrowserWindow({ webPreferences: { nodeIntegration: true } });
+  window.maximize();
 
   if (isDevelopment) {
     window.webContents.openDevTools();
@@ -56,13 +57,13 @@ app.on('activate', () => {
 });
 
 // create main BrowserWindow when electron is ready
-app.on('ready', () => {
-  mainWindow = createMainWindow();
-
+app.on('ready', async () => {
   if (isDevelopment) {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
-    installExtension(REACT_DEVELOPER_TOOLS)
+    await installExtension(REACT_DEVELOPER_TOOLS)
       .then((name: string) => console.log(`Added Extension:  ${name}`))
       .catch((err: any) => console.log('An error occurred: ', err));
   }
+
+  mainWindow = createMainWindow();
 });

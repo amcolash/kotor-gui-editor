@@ -115,12 +115,10 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
                       const buf = readFileSync(img);
                       this.imageCache[img] = 'data:image/png;base64,' + buf.toString('base64');
                       style.backgroundImage = `url(${this.imageCache[img]})`;
-                    } else {
-                      this.imageCache[img] = 'error';
                     }
                   } catch (e) {
                     console.error(e);
-                    if (!this.imageCache[img]) this.imageCache[img] = 'error';
+                    this.imageCache[img] = 'error';
                   }
                 } else if (this.imageCache[img] !== 'error') {
                   style.backgroundImage = `url(${this.imageCache[img]})`;
