@@ -43,6 +43,13 @@ export default class Tree extends React.Component<TreeProps> {
         children.push(this.makeNode(e));
       });
     }
+    if (data.struct) {
+      data.struct.forEach((e: any) => {
+        if (e.label === 'PROTOITEM' || e.label === 'SCROLLBAR') {
+          children.push(this.makeNode(e));
+        }
+      });
+    }
 
     return (
       <div key={label}>

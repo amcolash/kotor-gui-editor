@@ -20,6 +20,9 @@ export default class ItemControl extends React.Component<ItemControlProps> {
   private makeControl(type: string, label: string, data: any, cb: (newData: any) => void): JSX.Element | undefined {
     let control;
 
+    // Make separate sub-items for these
+    if (type === 'struct' && (label === 'PROTOITEM' || label === 'SCROLLBAR')) return;
+
     switch (type) {
       case 'id':
         control = <input type="text" value={data || ''} onChange={(e) => cb(e.target.value)} />;
