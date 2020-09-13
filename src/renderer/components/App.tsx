@@ -12,7 +12,7 @@ import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
 import ItemControl from './ItemControl';
-import Screen from './Screen';
+import Preview from './Preview';
 import Tree from './Tree';
 
 cssRule('body', {
@@ -107,7 +107,7 @@ export default class App extends React.Component<{}, AppState> {
         trim: true,
         arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
       });
-      this.setState({ data });
+      this.setState({ data, selected: undefined });
 
       console.log('data', data);
     }
@@ -196,7 +196,7 @@ export default class App extends React.Component<{}, AppState> {
         {this.state.data && (
           <div style={{ display: 'flex', flex: 1, minHeight: 0, margin: 8 }}>
             <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
-            <Screen
+            <Preview
               data={this.state.data}
               selected={this.state.selected}
               updateSelected={(selected: any) => this.setState({ selected })}

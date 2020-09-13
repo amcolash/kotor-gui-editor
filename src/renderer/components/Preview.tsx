@@ -9,19 +9,19 @@ const dragPadding: number = 6;
 
 let coords = { x: 0, y: 0 };
 
-interface ScreenProps {
+interface PreviewProps {
   data: any; // TODO Typedefs
   selected?: any;
   updateData: (data: any) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
   updateSelected: (data: any) => void;
 }
 
-interface ScreenState {
+interface PreviewState {
   zoom: number;
 }
 
-export default class Screen extends React.Component<ScreenProps, ScreenState> {
-  state: ScreenState = {
+export default class Preview extends React.Component<PreviewProps, PreviewState> {
+  state: PreviewState = {
     zoom: 1,
   };
 
@@ -35,13 +35,13 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     if (this.rootRef?.current) ro.observe(this.rootRef.current);
   }
 
-  public componentDidUpdate(prevProps: ScreenProps, prevState: ScreenState) {
+  public componentDidUpdate(prevProps: PreviewProps, prevState: PreviewState) {
     if (this.state.zoom !== prevState.zoom || this.props.data !== prevProps.data) {
       this.updateZoom();
     }
   }
 
-  public getSnapshotBeforeUpdate(prevProps: ScreenProps, prevState: ScreenState): null {
+  public getSnapshotBeforeUpdate(prevProps: PreviewProps, prevState: PreviewState): null {
     if (this.props.data !== prevProps.data) {
       this.totalWidth = 1;
       this.totalHeight = 1;
@@ -254,7 +254,7 @@ export default class Screen extends React.Component<ScreenProps, ScreenState> {
     const root = this.props.data.gff3.struct[0];
     return (
       <div
-        className="screen"
+        className="preview"
         style={{ flex: 1, margin: '0 8px', position: 'relative', overflow: 'hidden' }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).parentElement?.className === 'zoom') return;

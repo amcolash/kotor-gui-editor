@@ -1,3 +1,5 @@
+# Todo List
+
 - [x] Refresh .png cache
 - [x] Proper zoom scaling for screen view
 - [x] Better drag icons
@@ -7,12 +9,15 @@
   - [x] Protoitems
   - [x] Scrollbars
   - [ ] Borders
-- [ ] Icons + Name for App (maybe KGE - kotor gui editor)
+- [ ] Rewrite drag and drop in dom w/o "draggable"
+- [ ] Extract .tpc files?
+  - [ ] Even better, partial extraction based on the assets needed in GUI file
+- [ ] Icon + Name for App (maybe KGE - kotor gui editor)
+- [ ] Refactor draggable items out of Preview and into separate file
 - [ ] Docs on usage
 - [ ] Clean up UI
 - [ ] Collapse Settings UI
 - [ ] Resize Drag Handles
-- [ ] Extract .tpc files?
 - [ ] Undo stack
 - [ ] Write typedefs (at least partially)
 - [ ] Math in numeric input boxes?
