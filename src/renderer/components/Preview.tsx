@@ -1,17 +1,12 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import React, { createRef, CSSProperties, Fragment } from 'react';
 import { tmpDir } from './App';
 
-const imageCache: { [key: string]: string } = {};
-const dragImageCache: { [key: string]: HTMLImageElement } = {};
-
-let coords = { x: 0, y: 0 };
-
 interface PreviewProps {
   data: any; // TODO Typedefs
   selected?: any;
-  updateData: (data: any) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
+  updateData: (data: any, cb: () => void) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
   updateSelected: (data: any) => void;
 }
 
@@ -26,6 +21,10 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
 
   totalWidth: number = 0;
   totalHeight: number = 0;
+  coords = { x: 0, y: 0 };
+
+  imageCache: { [key: string]: string } = {};
+  dragImageCache: { [key: string]: HTMLImageElement } = {};
 
   rootRef: React.RefObject<HTMLDivElement> = createRef();
 
@@ -34,26 +33,10 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     if (this.rootRef?.current) ro.observe(this.rootRef.current);
   }
 
-  public componentDidUpdate(prevProps: PreviewProps, prevState: PreviewState) {
-    if (this.state.zoom !== prevState.zoom || this.props.data !== prevProps.data) {
-      this.updateZoom();
-    }
-  }
-
-  public getSnapshotBeforeUpdate(prevProps: PreviewProps, prevState: PreviewState): null {
-    if (this.props.data !== prevProps.data) {
-      this.totalWidth = 1;
-      this.totalHeight = 1;
-    }
-
-    return null;
-  }
-
   private updateZoom = () => {
     if (this.rootRef?.current) {
       const bounds = this.rootRef.current.getBoundingClientRect();
       const padding = parseInt(this.rootRef.current.style.padding);
-      console.log(padding);
 
       const ratioWidth = (bounds.width - padding * 2) / this.totalWidth;
       const ratioHeight = (bounds.height - padding * 2) / this.totalHeight;
@@ -125,18 +108,22 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
                 style.backgroundSize = `${width}px ${height}px`;
 
                 img = join(tmpDir, 'pngs', s.$t + '.png');
-                if (!imageCache[img]) {
+                if (!this.imageCache[img]) {
                   try {
-                    // Meh on perf here, but it should usually be a reasonably small amount of images
-                    const buf = readFileSync(img);
-                    imageCache[img] = 'data:image/png;base64,' + buf.toString('base64');
-                    style.backgroundImage = `url(${imageCache[img]})`;
+                    if (existsSync(img)) {
+                      // Meh on perf here, but it should usually be a reasonably small amount of images
+                      const buf = readFileSync(img);
+                      this.imageCache[img] = 'data:image/png;base64,' + buf.toString('base64');
+                      style.backgroundImage = `url(${this.imageCache[img]})`;
+                    } else {
+                      this.imageCache[img] = 'error';
+                    }
                   } catch (e) {
                     console.error(e);
-                    if (!imageCache[img]) imageCache[img] = 'error';
+                    if (!this.imageCache[img]) this.imageCache[img] = 'error';
                   }
-                } else if (imageCache[img] !== 'error') {
-                  style.backgroundImage = `url(${imageCache[img]})`;
+                } else if (this.imageCache[img] !== 'error') {
+                  style.backgroundImage = `url(${this.imageCache[img]})`;
                 }
               }
             });
@@ -146,7 +133,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
             const w = Math.floor(width * this.state.zoom);
             const h = Math.floor(height * this.state.zoom);
 
-            const found = dragImageCache[label];
+            const found = this.dragImageCache[label];
             if (found && found.width === w && found.height === h) return;
 
             const canvas = document.createElement('canvas');
@@ -156,9 +143,9 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
             canvas.height = h;
 
             // There is some dupe code below, callbacks and events are hard and just not worth it to deal with
-            if (img && imageCache[img]) {
+            if (img && this.imageCache[img]) {
               const image = document.createElement('img');
-              image.src = imageCache[img];
+              image.src = this.imageCache[img];
               image.onload = (e) => {
                 ctx.drawImage(e.target as HTMLImageElement, 0, 0, canvas.width, canvas.height);
 
@@ -174,7 +161,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
                 const image = document.createElement('img');
                 image.src = canvas.toDataURL();
                 image.onload = (e) => {
-                  dragImageCache[label] = e.target as HTMLImageElement;
+                  this.dragImageCache[label] = e.target as HTMLImageElement;
                 };
               };
             } else {
@@ -190,7 +177,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
               const image = document.createElement('img');
               image.src = canvas.toDataURL();
               image.onload = (e) => {
-                dragImageCache[label] = e.target as HTMLImageElement;
+                this.dragImageCache[label] = e.target as HTMLImageElement;
               };
             }
           }
@@ -221,24 +208,20 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
             // console.log(e.target);
             if (data !== this.props.selected) return;
 
-            coords.x = e.clientX;
-            coords.y = e.clientY;
+            this.coords.x = e.clientX;
+            this.coords.y = e.clientY;
 
             const bounds = (e.target as HTMLElement).getBoundingClientRect();
             const offsetX = e.clientX - bounds.left * this.state.zoom;
             const offsetY = e.clientY - bounds.top * this.state.zoom;
 
-            // console.log(bounds, offsetX, offsetY, e.clientX, e.clientY);
-
-            e.dataTransfer.setDragImage(dragImageCache[label], offsetX, offsetY);
+            e.dataTransfer.setDragImage(this.dragImageCache[label], offsetX, offsetY);
           }}
           onDragEnd={(e) => {
             if (data !== this.props.selected) return;
 
-            const diffX = (coords.x - e.clientX) / this.state.zoom;
-            const diffY = (coords.y - e.clientY) / this.state.zoom;
-
-            // console.log(diffX, diffY);
+            const diffX = (this.coords.x - e.clientX) / this.state.zoom;
+            const diffY = (this.coords.y - e.clientY) / this.state.zoom;
 
             data.struct.forEach((s: any) => {
               if (s.label === 'EXTENT') {
@@ -246,7 +229,9 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
                   if (s.label === 'TOP') s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
                   if (s.label === 'LEFT') s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
                 });
-                this.props.updateData(this.props.data);
+                this.props.updateData(this.props.data, () => {
+                  this.updateZoom();
+                });
               }
             });
           }}
@@ -260,15 +245,18 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
   }
 
   public render() {
+    if (!this.props.data) return null;
+
+    // Reset size before it is calculated by making children
+    this.totalWidth = 1;
+    this.totalHeight = 1;
+
     const root = this.props.data.gff3.struct[0];
     return (
       <div
         className="preview"
         style={{ flex: 1, margin: '0 8px', overflow: 'hidden', padding: 2 }}
-        onMouseDown={(e) => {
-          if ((e.target as HTMLElement).parentElement?.className === 'zoom') return;
-          this.props.updateSelected(undefined);
-        }}
+        onMouseDown={(e) => this.props.updateSelected(undefined)}
         ref={this.rootRef}
       >
         <div style={{ zoom: this.state.zoom, position: 'relative' }}>{this.makeNode(root)}</div>

@@ -92,6 +92,8 @@ export default class Tree extends React.Component<TreeProps> {
   }
 
   public render() {
+    if (!this.props.data) return null;
+
     const root = this.props.data.gff3.struct[0];
     return (
       <div className="tree" style={{ width: 250, whiteSpace: 'pre', overflowY: 'scroll', padding: 2 }}>

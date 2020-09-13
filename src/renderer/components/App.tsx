@@ -1,11 +1,10 @@
-import { spawnSync } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { remote } from 'electron';
 import { exists, existsSync, readFile, readFileSync, writeFileSync } from 'fs';
 import { emptyDir, mkdirp } from 'fs-extra';
-import * as klaw from 'klaw';
 import { basename, join, resolve } from 'path';
 import React from 'react';
-import * as tga2png from 'tga2png';
+import tga2png from 'tga2png';
 import { cssRule } from 'typestyle';
 import { promisify } from 'util';
 import { toJson, toXml } from 'xml2json';
@@ -35,6 +34,7 @@ export const emptyDirAsync = promisify(emptyDir);
 export const existsAsync = promisify(exists);
 export const mkdirpAsync = promisify(mkdirp);
 export const readFileAsync = promisify(readFile);
+export const spawnAsync = promisify(spawn);
 
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 
@@ -48,9 +48,7 @@ export default class App extends React.Component<{}, AppState> {
 
   // TODO: Only for dev
   public componentDidMount() {
-    this.extractPng().then(() => {
-      this.loadGff();
-    });
+    this.loadGff();
   }
 
   private checkPaths = () => {
@@ -58,20 +56,43 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   private extractPng = async (clear?: boolean) => {
-    if (this.state.tgaPath) {
+    if (this.state.tgaPath && this.state.data) {
       this.setState({ extracting: '' });
 
-      const resolvedTgaPath = resolve(this.state.tgaPath);
-      const items: klaw.Item[] = await new Promise((resolve, reject) => {
-        let items: klaw.Item[] = [];
-        klaw(resolvedTgaPath)
-          .on('data', (item) => {
-            if (item.stats.isFile() && item.path.endsWith('.tga')) items.push(item);
-          })
-          .on('end', () => resolve(items))
-          .on('error', (err: any) => reject(err));
-      });
+      const imageSet: Set<string> = new Set();
 
+      const checkNode = (data: any) => {
+        if (data.struct) {
+          data.struct.forEach((s: any) => {
+            if (s.label === 'BORDER') {
+              let showImg = false;
+              s.sint32.forEach((s: any) => {
+                if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
+              });
+
+              if (showImg) {
+                s.resref.forEach((s: any) => {
+                  if (s.label === 'FILL' && s.$t) imageSet.add(s.$t);
+                });
+              }
+            }
+          });
+        }
+
+        if (data.list?.struct) {
+          data.list.struct.forEach((s: any) => {
+            checkNode(s);
+          });
+        }
+      };
+
+      const root = this.state.data.gff3.struct[0];
+      checkNode(root);
+
+      const items = Array.from(imageSet);
+      console.log('extracting images:', items);
+
+      const resolvedTgaPath = resolve(this.state.tgaPath);
       const destDir = join(tmpDir, 'pngs');
       await mkdirpAsync(destDir);
       if (clear) await emptyDirAsync(destDir);
@@ -79,8 +100,17 @@ export default class App extends React.Component<{}, AppState> {
       for (let i = 0; i < items.length; i++) {
         this.setState({ extracting: `(${i + 1}/${items.length})` });
 
-        const dest = join(destDir, basename(items[i].path.replace('.tpc.tga', '.png').replace('.tga', '.png')));
-        if (!(await existsAsync(dest))) await tga2png(items[i].path, dest);
+        const tgaPath = join(resolvedTgaPath, items[i] + '.tga');
+        const tpcPath = join(resolvedTgaPath, items[i] + '.tpc');
+
+        if (await existsAsync(tgaPath)) {
+          const dest = join(destDir, items[i] + '.png');
+          if (!(await existsAsync(dest))) await tga2png(tgaPath, dest);
+        } else if (await existsAsync(tpcPath)) {
+          console.log('no tga, trying tpc', tpcPath);
+        } else {
+          console.log('no image found for', items[i]);
+        }
       }
 
       this.setState({ extracting: undefined });
@@ -107,9 +137,11 @@ export default class App extends React.Component<{}, AppState> {
         trim: true,
         arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
       });
-      this.setState({ data, selected: undefined });
 
-      console.log('data', data);
+      this.setState({ data, selected: undefined }, () => {
+        console.log('data', this.state.data);
+        this.extractPng();
+      });
     }
   };
 
@@ -193,18 +225,16 @@ export default class App extends React.Component<{}, AppState> {
           </div>
         </div>
 
-        {this.state.data && (
-          <div style={{ display: 'flex', flex: 1, minHeight: 0, margin: 8 }}>
-            <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
-            <Preview
-              data={this.state.data}
-              selected={this.state.selected}
-              updateSelected={(selected: any) => this.setState({ selected })}
-              updateData={(data) => this.setState(data)}
-            />
-            <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
-          </div>
-        )}
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, margin: 8 }}>
+          <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
+          <Preview
+            data={this.state.data}
+            selected={this.state.selected}
+            updateSelected={(selected: any) => this.setState({ selected })}
+            updateData={(data, cb) => this.setState(data, () => cb())}
+          />
+          <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
+        </div>
       </div>
     );
   }
