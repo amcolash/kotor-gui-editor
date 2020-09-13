@@ -6,11 +6,11 @@
 - [x] Refresh .png cache
 - [ ] Extract .tpc files?
 - [ ] Add a changelog
-- [ ] Github/Travis CI builds
+- [x] Github/Travis CI builds
 - [ ] Undo stack
 - [ ] Write typedefs (at least partially)
 - [x] Better drag icons
-- [ ] Math in numeric input boxes
+- [ ] Math in numeric input boxes?
 - [ ] Display primitive types like K-GFF
 - [ ] Render other types of things?
   - [x] Protoitems
