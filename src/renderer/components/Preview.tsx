@@ -5,7 +5,6 @@ import { tmpDir } from './App';
 
 const imageCache: { [key: string]: string } = {};
 const dragImageCache: { [key: string]: HTMLImageElement } = {};
-const dragPadding: number = 6;
 
 let coords = { x: 0, y: 0 };
 
@@ -53,8 +52,11 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
   private updateZoom = () => {
     if (this.rootRef?.current) {
       const bounds = this.rootRef.current.getBoundingClientRect();
-      const ratioWidth = bounds.width / this.totalWidth;
-      const ratioHeight = bounds.height / this.totalHeight;
+      const padding = parseInt(this.rootRef.current.style.padding);
+      console.log(padding);
+
+      const ratioWidth = (bounds.width - padding * 2) / this.totalWidth;
+      const ratioHeight = (bounds.height - padding * 2) / this.totalHeight;
 
       this.setState({ zoom: Math.min(ratioWidth, ratioHeight) });
     }
@@ -84,9 +86,16 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     if (data.struct) {
       data.struct.forEach((s: any) => {
         if (s.label === 'EXTENT') {
-          style.border = '1px solid #555';
           style.position = 'absolute';
-          if (this.props.selected === data) style.outline = '2px solid lime';
+
+          if (this.props.selected === data) {
+            style.outline = '6px solid lime';
+            style.outlineOffset = -6;
+          } else {
+            style.outline = '1px solid #555';
+            style.outlineOffset = -1;
+          }
+
           s.sint32.forEach((s: any) => {
             if (s.label === 'TOP') style.top = parseInt(s.$t);
             if (s.label === 'LEFT') style.left = parseInt(s.$t);
@@ -134,8 +143,8 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
           }
 
           if (style) {
-            const w = Math.floor(width * this.state.zoom) + dragPadding;
-            const h = Math.floor(height * this.state.zoom) + dragPadding;
+            const w = Math.floor(width * this.state.zoom);
+            const h = Math.floor(height * this.state.zoom);
 
             const found = dragImageCache[label];
             if (found && found.width === w && found.height === h) return;
@@ -216,8 +225,8 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
             coords.y = e.clientY;
 
             const bounds = (e.target as HTMLElement).getBoundingClientRect();
-            const offsetX = e.clientX - bounds.left * this.state.zoom + dragPadding / 2;
-            const offsetY = e.clientY - bounds.top * this.state.zoom + dragPadding / 2;
+            const offsetX = e.clientX - bounds.left * this.state.zoom;
+            const offsetY = e.clientY - bounds.top * this.state.zoom;
 
             // console.log(bounds, offsetX, offsetY, e.clientX, e.clientY);
 
@@ -255,14 +264,14 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     return (
       <div
         className="preview"
-        style={{ flex: 1, margin: '0 8px', position: 'relative', overflow: 'hidden' }}
+        style={{ flex: 1, margin: '0 8px', overflow: 'hidden', padding: 2 }}
         onMouseDown={(e) => {
           if ((e.target as HTMLElement).parentElement?.className === 'zoom') return;
           this.props.updateSelected(undefined);
         }}
         ref={this.rootRef}
       >
-        <div style={{ zoom: this.state.zoom }}>{this.makeNode(root)}</div>
+        <div style={{ zoom: this.state.zoom, position: 'relative' }}>{this.makeNode(root)}</div>
       </div>
     );
   }

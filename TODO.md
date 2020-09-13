@@ -9,7 +9,7 @@
   - [x] Protoitems
   - [x] Scrollbars
   - [ ] Borders
-- [ ] Rewrite drag and drop in dom w/o "draggable"
+- [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
 - [ ] Extract .tpc files?
   - [ ] Even better, partial extraction based on the assets needed in GUI file
 - [ ] Icon + Name for App (maybe KGE - kotor gui editor)

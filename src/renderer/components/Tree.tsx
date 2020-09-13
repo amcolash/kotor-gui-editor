@@ -1,4 +1,5 @@
 import React from 'react';
+import { CornerDownRight } from 'react-feather';
 import { cssRule } from 'typestyle';
 
 cssRule('.treeItem', {
@@ -26,7 +27,7 @@ export default class Tree extends React.Component<TreeProps> {
     if (selected) selected.scrollIntoView();
   }
 
-  private makeNode(data: any): JSX.Element {
+  private makeNode(data: any, isChild?: boolean): JSX.Element {
     let label: string = '';
     if (data.exostring) {
       if (data.exostring.label === 'TAG') label = data.exostring.$t;
@@ -40,13 +41,13 @@ export default class Tree extends React.Component<TreeProps> {
     const children: JSX.Element[] = [];
     if (data.list && data.list.struct) {
       data.list.struct.forEach((e: any) => {
-        children.push(this.makeNode(e));
+        children.push(this.makeNode(e, true));
       });
     }
     if (data.struct) {
       data.struct.forEach((e: any) => {
         if (e.label === 'PROTOITEM' || e.label === 'SCROLLBAR') {
-          children.push(this.makeNode(e));
+          children.push(this.makeNode(e, true));
         }
       });
     }
@@ -65,6 +66,7 @@ export default class Tree extends React.Component<TreeProps> {
           }}
           tabIndex={0}
         >
+          {isChild && <CornerDownRight size="12" style={{ marginRight: 4 }} />}
           {label}
         </div>
         {children && <div style={{ marginLeft: 14 }}>{children}</div>}
@@ -92,7 +94,7 @@ export default class Tree extends React.Component<TreeProps> {
   public render() {
     const root = this.props.data.gff3.struct[0];
     return (
-      <div className="tree" style={{ width: 250, whiteSpace: 'pre', overflowY: 'scroll' }}>
+      <div className="tree" style={{ width: 250, whiteSpace: 'pre', overflowY: 'scroll', padding: 2 }}>
         {this.makeNode(root)}
       </div>
     );

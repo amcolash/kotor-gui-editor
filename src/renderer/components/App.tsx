@@ -142,9 +142,9 @@ export default class App extends React.Component<{}, AppState> {
       <div
         className="mainContainer"
         style={{
-          padding: 10,
-          width: 'calc(100vw - 20px)',
-          height: 'calc(100vh - 20px)',
+          padding: 5,
+          width: 'calc(100vw - 10px)',
+          height: 'calc(100vh - 10px)',
           display: 'flex',
           flexDirection: 'column',
         }}
