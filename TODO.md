@@ -1,19 +1,20 @@
-- [ ] Icons + Name for App (maybe KGE - kotor gui editor)
-- [ ] Clean up UI
-- [ ] Collapse Settings UI
-- [x] Proper zoom scaling for screen view
-- [ ] Resize Drag Handles
 - [x] Refresh .png cache
-- [ ] Extract .tpc files?
-- [ ] Add a changelog
-- [x] Github/Travis CI builds
-- [ ] Undo stack
-- [ ] Write typedefs (at least partially)
+- [x] Proper zoom scaling for screen view
 - [x] Better drag icons
-- [ ] Math in numeric input boxes?
-- [ ] Display primitive types like K-GFF
+- [x] Github/Travis CI builds
+- [x] Add a changelog
 - [ ] Render other types of things?
   - [x] Protoitems
   - [x] Scrollbars
   - [ ] Borders
+- [ ] Icons + Name for App (maybe KGE - kotor gui editor)
+- [ ] Docs on usage
+- [ ] Clean up UI
+- [ ] Collapse Settings UI
+- [ ] Resize Drag Handles
+- [ ] Extract .tpc files?
+- [ ] Undo stack
+- [ ] Write typedefs (at least partially)
+- [ ] Math in numeric input boxes?
+- [ ] Display primitive types like K-GFF
 - [ ] Automated tests? Maybe, but probably not...

@@ -1,5 +1,6 @@
 {
-  "name": "electron-webpack-quick-start",
+  "name": "kotor-gui-editor",
+  "description": "A tool to make editing the GUI of KotOR visual and simpler",
   "author": {
     "name": "Andrew McOlash",
     "url": "https://amcolash.com"
@@ -18,7 +19,8 @@
     "dist:linux": "npm run compile && electron-builder --linux",
     "dist:mac": "npm run compile && electron-builder --mac",
     "dist:windows": "npm run compile && electron-builder --win",
-    "release": "npm run dist"
+    "release": "npm run dist",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "klaw": "^3.0.0",
@@ -48,8 +50,13 @@
     "webpack": "~4.42.1"
   },
   "build": {
+    "appId": "com.amcolash.kge",
+    "productName": "KotOR GUI Editor",
     "publish": [
       "github"
-    ]
+    ],
+    "linux": {
+      "category": "Utility"
+    }
   }
 }

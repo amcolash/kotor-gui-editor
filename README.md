@@ -1,6 +1,6 @@
 # kotor-gui-editor
 
-Make editing kotor gui visual and simpler
+A tool to make editing the GUI of KotOR visual and simpler
 
 Requires having a few tools from [xoreos-tools](https://github.com/xoreos/xoreos-tools).
 
