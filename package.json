@@ -16,7 +16,8 @@
     "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null",
     "dist:linux": "npm run compile && electron-builder --linux",
     "dist:mac": "npm run compile && electron-builder --mac",
-    "dist:windows": "npm run compile && electron-builder --win"
+    "dist:windows": "npm run compile && electron-builder --win",
+    "publish": "npm run compile && electron-builder --publish always"
   },
   "dependencies": {
     "klaw": "^3.0.0",
