@@ -149,47 +149,52 @@ export default class App extends React.Component<{}, AppState> {
           flexDirection: 'column',
         }}
       >
-        <FilePicker
-          label="Tools Path"
-          file={this.state.toolsPath}
-          filter="directory"
-          updateFile={(file) => {
-            this.setState({ toolsPath: file }, () => {
-              localStorage.setItem('toolsPath', file);
-            });
-          }}
-        />
-        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <FilePicker
-            label="TGA Path"
-            file={this.state.tgaPath}
+            label="Tools Path"
+            file={this.state.toolsPath}
             filter="directory"
             updateFile={(file) => {
-              this.setState({ tgaPath: file }, () => {
-                localStorage.setItem('tgaPath', file);
-                this.extractPng(true);
+              this.setState({ toolsPath: file }, () => {
+                localStorage.setItem('toolsPath', file);
               });
             }}
-            style={{ flex: 1 }}
           />
-          <Button onClick={() => this.extractPng(true)}>Reload Assets</Button>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <FilePicker
+              label="TGA Path"
+              file={this.state.tgaPath}
+              filter="directory"
+              updateFile={(file) => {
+                this.setState({ tgaPath: file }, () => {
+                  localStorage.setItem('tgaPath', file);
+                  this.extractPng(true);
+                });
+              }}
+              style={{ flex: 1 }}
+            />
+            <Button onClick={() => this.extractPng(true)}>Reload Assets</Button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <FilePicker
+              label="GUI File"
+              file={this.state.guiFile}
+              filter="gui"
+              updateFile={(file) => {
+                this.setState({ guiFile: file }, () => {
+                  localStorage.setItem('guiFile', file);
+                  this.loadGff();
+                });
+              }}
+              style={{ flex: 1 }}
+            />
+            <Button onClick={this.loadGff}>Revert</Button>
+            <Button onClick={this.saveGff}>Save</Button>
+          </div>
         </div>
-        <FilePicker
-          label="GUI File"
-          file={this.state.guiFile}
-          filter="gui"
-          updateFile={(file) => {
-            this.setState({ guiFile: file }, () => {
-              localStorage.setItem('guiFile', file);
-              this.loadGff();
-            });
-          }}
-        />
-        <Button onClick={this.loadGff}>Revert</Button>
-        <Button onClick={this.saveGff}>Save</Button>
 
         {this.state.data && (
-          <div style={{ display: 'flex', minHeight: 0 }}>
+          <div style={{ display: 'flex', flex: 1, minHeight: 0, margin: 8 }}>
             <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
             <Screen
               data={this.state.data}

@@ -1,11 +1,27 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import React, { CSSProperties } from 'react';
+import { ZoomIn, ZoomOut } from 'react-feather';
+import { style } from 'typestyle';
 import { tmpDir } from './App';
 
 const imageCache: { [key: string]: string } = {};
-const zoom = 0.6;
+const dragImageCache: { [key: string]: HTMLImageElement } = {};
+
 let coords = { x: 0, y: 0 };
+
+const iconClass = style({
+  margin: 4,
+  padding: 4,
+  borderRadius: 4,
+  cursor: 'pointer',
+
+  $nest: {
+    '&:hover': {
+      background: '#eee',
+    },
+  },
+});
 
 interface ScreenProps {
   data: any; // TODO Typedefs
@@ -14,7 +30,15 @@ interface ScreenProps {
   updateSelected: (data: any) => void;
 }
 
-export default class Screen extends React.Component<ScreenProps> {
+interface ScreenState {
+  zoom: number;
+}
+
+export default class Screen extends React.Component<ScreenProps, ScreenState> {
+  state: ScreenState = {
+    zoom: 0.6,
+  };
+
   private makeNode(data: any): JSX.Element {
     let label: string = '';
     if (data.exostring) {
@@ -27,6 +51,9 @@ export default class Screen extends React.Component<ScreenProps> {
     }
 
     let style: CSSProperties = {};
+    let width: number = 0;
+    let height: number = 0;
+
     if (data.struct) {
       data.struct.forEach((s: any) => {
         if (s.label === 'EXTENT') {
@@ -36,8 +63,14 @@ export default class Screen extends React.Component<ScreenProps> {
           s.sint32.forEach((s: any) => {
             if (s.label === 'TOP') style.top = parseInt(s.$t);
             if (s.label === 'LEFT') style.left = parseInt(s.$t);
-            if (s.label === 'WIDTH') style.width = parseInt(s.$t);
-            if (s.label === 'HEIGHT') style.height = parseInt(s.$t);
+            if (s.label === 'WIDTH') {
+              style.width = parseInt(s.$t);
+              width = style.width;
+            }
+            if (s.label === 'HEIGHT') {
+              style.height = parseInt(s.$t);
+              height = style.height;
+            }
           });
         } else if (s.label === 'BORDER') {
           let showImg = false;
@@ -45,13 +78,14 @@ export default class Screen extends React.Component<ScreenProps> {
             if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
           });
 
+          let img;
           if (showImg) {
             s.resref.forEach((s: any) => {
               if (s.label === 'FILL' && s.$t) {
                 style.backgroundRepeat = 'no-repeat';
-                style.backgroundSize = 'cover';
+                style.backgroundSize = `${width}px ${height}px`;
 
-                const img = join(tmpDir, 'pngs', s.$t + '.png');
+                img = join(tmpDir, 'pngs', s.$t + '.png');
                 if (!imageCache[img]) {
                   try {
                     // Meh on perf here, but it should usually be a reasonably small amount of images
@@ -68,6 +102,51 @@ export default class Screen extends React.Component<ScreenProps> {
               }
             });
           }
+
+          if (style) {
+            const w = Math.floor(width * this.state.zoom);
+            const h = Math.floor(height * this.state.zoom);
+
+            const found = dragImageCache[label];
+            if (found && found.width === w && found.height === h) return;
+
+            const canvas = document.createElement('canvas');
+            const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'lime';
+
+            canvas.width = w;
+            canvas.height = h;
+
+            // There is some dupe code below, callbacks and events are hard and just not worth it to deal with
+            if (img && imageCache[img]) {
+              const image = document.createElement('img');
+              image.src = imageCache[img];
+              image.onload = (e) => {
+                ctx.drawImage(e.target as HTMLImageElement, 0, 0, canvas.width, canvas.height);
+
+                ctx.beginPath();
+                ctx.rect(0, 0, w, h);
+                ctx.stroke();
+
+                const image = document.createElement('img');
+                image.src = canvas.toDataURL();
+                image.onload = (e) => {
+                  dragImageCache[label] = e.target as HTMLImageElement;
+                };
+              };
+            } else {
+              ctx.beginPath();
+              ctx.rect(0, 0, w, h);
+              ctx.stroke();
+
+              const image = document.createElement('img');
+              image.src = canvas.toDataURL();
+              image.onload = (e) => {
+                dragImageCache[label] = e.target as HTMLImageElement;
+              };
+            }
+          }
         }
       });
     }
@@ -81,26 +160,47 @@ export default class Screen extends React.Component<ScreenProps> {
 
     return (
       <div
-        onClick={(e) => {
-          if (data !== this.props.selected) e.stopPropagation();
-          this.props.updateSelected(data);
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          if (data !== this.props.selected) this.props.updateSelected(data);
         }}
         style={style}
         key={label}
+        id={label}
         draggable={data === this.props.selected}
         onDragStart={(e) => {
+          // console.log(e.target);
+
           if (data !== this.props.selected) return;
 
           coords.x = e.clientX;
           coords.y = e.clientY;
+
+          let label: string = '';
+          if (data.exostring) {
+            if (data.exostring.label === 'TAG') label = data.exostring.$t;
+            else if (Array.isArray(data.exostring)) {
+              data.exostring.forEach((e: any) => {
+                if (e.label === 'TAG') label = e.$t;
+              });
+            }
+          }
+
+          const bounds = (e.target as HTMLElement).getBoundingClientRect();
+          const offsetX = e.clientX - bounds.left * this.state.zoom;
+          const offsetY = e.clientY - bounds.top * this.state.zoom;
+
+          // console.log(bounds, offsetX, offsetY, e.clientX, e.clientY);
+
+          e.dataTransfer.setDragImage(dragImageCache[label], offsetX, offsetY);
         }}
         onDragEnd={(e) => {
           if (data !== this.props.selected) return;
 
-          const diffX = (coords.x - e.clientX) / zoom;
-          const diffY = (coords.y - e.clientY) / zoom;
+          const diffX = (coords.x - e.clientX) / this.state.zoom;
+          const diffY = (coords.y - e.clientY) / this.state.zoom;
 
-          console.log(diffX, diffY);
+          // console.log(diffX, diffY);
 
           data.struct.forEach((s: any) => {
             if (s.label === 'EXTENT') {
@@ -123,10 +223,25 @@ export default class Screen extends React.Component<ScreenProps> {
     return (
       <div
         className="screen"
-        style={{ flex: 1, margin: 4, position: 'relative', zoom }}
-        onClick={() => this.props.updateSelected(undefined)}
+        style={{ flex: 1, margin: 4, position: 'relative', overflow: 'hidden' }}
+        onMouseDown={() => this.props.updateSelected(undefined)}
       >
-        {this.makeNode(root)}
+        <div style={{ zoom: this.state.zoom }}>{this.makeNode(root)}</div>
+        <div
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            display: 'flex',
+            padding: 5,
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: 4,
+            border: '1px solid #ccc',
+          }}
+        >
+          <ZoomOut size="20" className={iconClass} onClick={() => this.setState({ zoom: this.state.zoom -= 0.1 })} />
+          <ZoomIn size="20" className={iconClass} onClick={() => this.setState({ zoom: this.state.zoom += 0.1 })} />
+        </div>
       </div>
     );
   }

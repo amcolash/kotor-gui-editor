@@ -31,7 +31,7 @@ interface FilePickerProps {
 
 export default class FilePicker extends React.Component<FilePickerProps> {
   private chooseFile = () => {
-    const options: Electron.OpenDialogOptions = {};
+    const options: Electron.OpenDialogOptions = { defaultPath: this.props.file };
     if (this.props.filter) {
       if (this.props.filter === 'directory') {
         options.properties = ['openDirectory'];

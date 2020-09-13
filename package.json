@@ -19,6 +19,7 @@
     "klaw": "^3.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-feather": "^2.0.8",
     "source-map-support": "^0.5.16",
     "tga2png": "^0.1.3",
     "tinycolor2": "^1.4.1",
