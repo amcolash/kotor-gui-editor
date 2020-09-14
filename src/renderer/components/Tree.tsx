@@ -40,6 +40,7 @@ export default class Tree extends React.Component<TreeProps> {
 
     return (
       <TreeNode
+        key={label}
         label={label}
         data={data}
         isChild={isChild || false}

@@ -91,7 +91,7 @@ export default class App extends React.Component<{}, AppState> {
       checkNode(root);
 
       const items = Array.from(imageSet);
-      console.log('extracting images:', items);
+      // console.log('extracting images:', items);
 
       const resolvedTgaPath = resolve(this.state.tgaPath);
 
