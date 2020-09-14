@@ -107,7 +107,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
                 style.backgroundRepeat = 'no-repeat';
                 style.backgroundSize = `${width}px ${height}px`;
 
-                img = join(tmpDir, 'pngs', s.$t + '.png');
+                img = join(tmpDir, 'png', s.$t + '.png');
                 if (!this.imageCache[img]) {
                   try {
                     if (existsSync(img)) {

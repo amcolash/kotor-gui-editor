@@ -10,14 +10,15 @@
   - [x] Scrollbars
   - [ ] Borders
 - [x] Partial extraction based on the assets needed in GUI file
-- [ ] Extract .tpc files?
+- [x] Extract .tpc files?
 - [ ] Icon + Name for App (maybe KGE - kotor gui editor)
-- [ ] Refactor draggable items out of Preview and into separate file
-- [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
+- [ ] Resize Drag Handles
+- [ ] Refactor draggable items out of Preview and into components
+- [ ] Refactor tree items to components
 - [ ] Docs on usage
 - [ ] Clean up UI
 - [ ] Collapse Settings UI
-- [ ] Resize Drag Handles
+- [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
 - [ ] Undo stack
 - [ ] Write typedefs (at least partially)
 - [ ] Math in numeric input boxes?

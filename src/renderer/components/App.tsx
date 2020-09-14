@@ -1,6 +1,6 @@
-import { spawn, spawnSync } from 'child_process';
+import { exec } from 'child_process';
 import { remote } from 'electron';
-import { exists, existsSync, readFile, readFileSync, writeFileSync } from 'fs';
+import { exists, existsSync, readFile, writeFile } from 'fs';
 import { emptyDir, mkdirp } from 'fs-extra';
 import { basename, join, resolve } from 'path';
 import React from 'react';
@@ -31,10 +31,11 @@ interface AppState {
 }
 
 export const emptyDirAsync = promisify(emptyDir);
+export const execAsync = promisify(exec);
 export const existsAsync = promisify(exists);
 export const mkdirpAsync = promisify(mkdirp);
 export const readFileAsync = promisify(readFile);
-export const spawnAsync = promisify(spawn);
+export const writeFileAsync = promisify(writeFile);
 
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 
@@ -93,9 +94,17 @@ export default class App extends React.Component<{}, AppState> {
       console.log('extracting images:', items);
 
       const resolvedTgaPath = resolve(this.state.tgaPath);
-      const destDir = join(tmpDir, 'pngs');
+
+      const destDir = join(tmpDir, 'png');
       await mkdirpAsync(destDir);
-      if (clear) await emptyDirAsync(destDir);
+
+      const tgaTmpDir = join(tmpDir, 'tga');
+      await mkdirpAsync(tgaTmpDir);
+
+      if (clear) {
+        await emptyDirAsync(destDir);
+        await emptyDirAsync(tgaTmpDir);
+      }
 
       for (let i = 0; i < items.length; i++) {
         this.setState({ extracting: `(${i + 1}/${items.length})` });
@@ -103,13 +112,26 @@ export default class App extends React.Component<{}, AppState> {
         const tgaPath = join(resolvedTgaPath, items[i] + '.tga');
         const tpcPath = join(resolvedTgaPath, items[i] + '.tpc');
 
-        if (await existsAsync(tgaPath)) {
-          const dest = join(destDir, items[i] + '.png');
-          if (!(await existsAsync(dest))) await tga2png(tgaPath, dest);
-        } else if (await existsAsync(tpcPath)) {
-          console.log('no tga, trying tpc', tpcPath);
-        } else {
-          console.log('no image found for', items[i]);
+        const dest = join(destDir, items[i] + '.png');
+
+        if (!(await existsAsync(dest))) {
+          if (await existsAsync(tgaPath)) {
+            // TGA EXTRACTION
+            await tga2png(tgaPath, dest);
+          } else if (await existsAsync(tpcPath)) {
+            // TPC EXTRACTION
+            const resolvedTool = resolve(this.state.toolsPath!, 'xoreostex2tga');
+            const extractedTga = join(tgaTmpDir, items[i] + '.tga');
+
+            const args = [tpcPath, extractedTga];
+            const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+            if (stdout) console.log(stdout);
+            if (stderr) console.error(stderr);
+
+            await tga2png(extractedTga, dest);
+          } else {
+            console.log('no image found for', items[i]);
+          }
         }
       }
 
@@ -117,18 +139,19 @@ export default class App extends React.Component<{}, AppState> {
     }
   };
 
-  private loadGff = () => {
+  private loadGff = async () => {
     if (this.checkPaths()) {
       const resolvedTool = resolve(this.state.toolsPath!, 'gff2xml');
       const resolvedGui = resolve(this.state.guiFile!);
       const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
 
       const args = ['--kotor', resolvedGui, resolvedXml];
-      const s = spawnSync(resolvedTool, args);
-      if (s.stdout) console.log(s.stdout.toString());
-      if (s.stderr) console.error(s.stderr.toString());
 
-      const xml = readFileSync(resolvedXml);
+      const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+      if (stdout) console.log(stdout);
+      if (stderr) console.error(stderr);
+
+      const xml = await readFileAsync(resolvedXml);
 
       const data = toJson(xml, {
         object: true,
@@ -145,19 +168,20 @@ export default class App extends React.Component<{}, AppState> {
     }
   };
 
-  private saveGff = () => {
+  private saveGff = async () => {
     if (this.checkPaths()) {
       const resolvedTool = resolve(this.state.toolsPath!, 'xml2gff');
       const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-saved.xml'));
       const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
 
       const xml = toXml(this.state.data);
-      writeFileSync(resolvedXml, xml);
+      await writeFileAsync(resolvedXml, xml);
 
       const args = ['--kotor', resolvedXml, resolvedGui];
-      const s = spawnSync(resolvedTool, args);
-      if (s.stdout) console.log(s.stdout.toString());
-      if (s.stderr) console.error(s.stderr.toString());
+
+      const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+      if (stdout) console.log(stdout);
+      if (stderr) console.error(stderr);
     }
   };
 
