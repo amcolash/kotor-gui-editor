@@ -4,6 +4,10 @@ This changelog keeps track of most (except early development) changes to the too
 
 ## 0.0.3: 09-14-2020
 
+### Added
+
+- Add portable build for windows
+
 ### Updated
 
 - No longer need to reference `xoreos-tools` directory, tools are bundled in

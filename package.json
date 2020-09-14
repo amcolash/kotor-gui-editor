@@ -18,7 +18,7 @@
     "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null",
     "dist:linux": "npm run compile && electron-builder --linux",
     "dist:mac": "npm run compile && electron-builder --mac",
-    "dist:windows": "npm run compile && electron-builder --win",
+    "dist:win": "npm run compile && electron-builder --win",
     "release": "npm run dist",
     "postinstall": "electron-builder install-app-deps"
   },
@@ -60,6 +60,12 @@
     ],
     "linux": {
       "category": "Utility"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
     }
   }
 }
