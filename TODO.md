@@ -13,7 +13,7 @@
 - [x] Extract .tpc files?
 - [x] Refactor tree items to components
 - [x] Refactor draggable items out of Preview and into components
-- [ ] Refactor ItemControl into components
+- [x] Refactor ItemControl into components (was renamed to PropertyList)
 - [ ] Icon + Name for App (maybe KGE - kotor gui editor)
 - [ ] Resize Drag Handles
 - [ ] Docs on usage

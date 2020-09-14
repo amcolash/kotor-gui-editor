@@ -10,20 +10,17 @@ const itemStyle = style({
   padding: 4,
 });
 
-interface ItemControlProps {
-  selected?: any;
+interface PropertyNodeProps {
+  type: string;
+  label: string;
   data: any;
-  updateData: (data: any) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
+  cb: (newData: any) => void;
 }
 
-export default class ItemControl extends React.Component<ItemControlProps> {
-  ref: React.RefObject<HTMLDivElement> = React.createRef();
+export default class PropertyNode extends React.Component<PropertyNodeProps> {
+  render() {
+    const { cb, data, label, type } = this.props;
 
-  public componentDidUpdate() {
-    if (this.ref?.current) this.ref.current.scrollTop = 0;
-  }
-
-  private makeControl(type: string, label: string, data: any, cb: (newData: any) => void): JSX.Element | undefined {
     let control;
 
     // Make separate sub-items for these
@@ -41,10 +38,12 @@ export default class ItemControl extends React.Component<ItemControlProps> {
         control = <input type="checkbox" checked={data.$t === '1'} onChange={(e) => cb({ ...data, $t: e.target.checked ? '1' : '0' })} />;
         break;
       case 'sint32':
+      case 'uint32':
+      case 'float':
         control = <input type="number" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
         break;
       case 'struct':
-        control = <div className={structName}>{this.makeControls(data)}</div>;
+        control = <div className={structName}>{this.props.children}</div>;
         break;
       case 'vector':
         control = data.double.map((d: any, i: number) => (
@@ -85,44 +84,13 @@ export default class ItemControl extends React.Component<ItemControlProps> {
         }
         break;
       default:
-        return;
+        // console.log('missing node for', type, data);
+        return null;
     }
 
     return (
       <div key={label} className={itemStyle}>
         {label}: {control}
-      </div>
-    );
-  }
-
-  private makeControls(data: any): JSX.Element {
-    const children: JSX.Element[] = [];
-    Object.keys(data).forEach((k) => {
-      if (Array.isArray(data[k])) {
-        // Need to iterate over the array this way so that we can muck around with the data and it isn't duplicated
-        for (let i = 0; i < data[k].length; i++) {
-          const c = this.makeControl(k, data[k][i].label, data[k][i], (updated) => {
-            data[k][i] = updated;
-            this.props.updateData(this.props.data);
-          });
-          if (c) children.push(c);
-        }
-      } else {
-        const c = this.makeControl(k, data[k].label || k, data[k], (updated) => {
-          data[k] = updated;
-          this.props.updateData(this.props.data);
-        });
-        if (c) children.push(c);
-      }
-    });
-
-    return <div>{children}</div>;
-  }
-
-  public render() {
-    return (
-      <div className="itemBar" ref={this.ref} style={{ width: 200, overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
-        {this.props.selected && this.makeControls(this.props.selected)}
       </div>
     );
   }

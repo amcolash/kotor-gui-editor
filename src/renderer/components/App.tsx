@@ -10,8 +10,8 @@ import { promisify } from 'util';
 import { toJson, toXml } from 'xml2json';
 import Button from './Button';
 import FilePicker from './FilePicker';
-import ItemControl from './ItemControl';
 import Preview from './Preview';
+import PropertyList from './PropertyList';
 import Tree from './Tree';
 
 cssRule('body', {
@@ -257,7 +257,7 @@ export default class App extends React.Component<{}, AppState> {
             updateSelected={(selected: any) => this.setState({ selected })}
             updateData={(data, cb) => this.setState(data, () => cb())}
           />
-          <ItemControl selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
+          <PropertyList selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
         </div>
       </div>
     );
