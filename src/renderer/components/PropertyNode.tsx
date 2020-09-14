@@ -39,7 +39,13 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
         break;
       case 'sint32':
         control = (
-          <input type="number" value={data.$t} step="1" onChange={(e) => cb({ ...data, $t: parseFloat(e.target.value).toFixed(0) })} />
+          <input
+            type="number"
+            value={data.$t}
+            step="1"
+            min={label === 'WIDTH' || label === 'HEIGHT' ? 1 : undefined}
+            onChange={(e) => cb({ ...data, $t: parseFloat(e.target.value).toFixed(0) })}
+          />
         );
         break;
       case 'uint32':

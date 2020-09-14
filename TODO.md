@@ -14,8 +14,8 @@
 - [x] Refactor tree items to components
 - [x] Refactor draggable items out of Preview and into components
 - [x] Refactor ItemControl into components (was renamed to PropertyList)
+- [x] Resize Drag Handles
 - [ ] Icon + Name for App (maybe KGE - kotor gui editor)
-- [ ] Resize Drag Handles
 - [ ] Docs on usage
 - [ ] Clean up UI
 - [ ] Collapse Settings UI

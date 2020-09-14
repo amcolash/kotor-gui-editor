@@ -1,8 +1,37 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import React, { CSSProperties, Fragment } from 'react';
+import { style } from 'typestyle';
 import { tmpDir } from './App';
 import { PreviewData } from './Preview';
+
+const handleSize = 20;
+const handleClass = style({
+  minWidth: handleSize,
+  minHeight: handleSize,
+  maxWidth: handleSize,
+  maxHeight: handleSize,
+  position: 'absolute',
+  background: 'lime',
+});
+
+const horizontalClass = style({
+  $nest: {
+    '&:hover': {
+      cursor: 'ew-resize',
+    },
+  },
+});
+
+const verticalClass = style({
+  $nest: {
+    '&:hover': {
+      cursor: 'ns-resize',
+    },
+  },
+});
+
+const selectionWidth = 4;
 
 interface PreviewNodeProps {
   data: any;
@@ -18,7 +47,7 @@ interface PreviewNodeProps {
 
 export default class PreviewNode extends React.Component<PreviewNodeProps> {
   render() {
-    const { data, label, previewData, zoom } = this.props;
+    const { data, label, previewData, selected, zoom } = this.props;
     const { dragImageCache, imageCache } = previewData;
 
     const style: CSSProperties = {};
@@ -30,7 +59,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
         if (s.label === 'EXTENT') {
           style.position = 'absolute';
 
-          if (this.props.selected === data) {
+          if (selected === data) {
             style.outline = '6px solid lime';
             style.outlineOffset = -6;
             style.zIndex = 1;
@@ -102,7 +131,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
           // Shared logic for generating preview, needed since there are annoying callbacks from image loading
           const generatePreview = () => {
             ctx.beginPath();
-            ctx.lineWidth = 4;
+            ctx.lineWidth = selectionWidth;
             ctx.strokeStyle = 'lime';
             ctx.rect(0, 0, w, h);
             ctx.stroke();
@@ -131,20 +160,71 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
       });
     }
 
+    const dragStartHandle = (e: React.DragEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+
+      previewData.coords.x = e.clientX;
+      previewData.coords.y = e.clientY;
+
+      // No drag image for now
+      const img = new Image();
+      e.dataTransfer.setDragImage(img, 0, 0);
+    };
+
+    const dragEndHandle = (e: React.DragEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+
+      const diffX = (previewData.coords.x - e.clientX) / zoom;
+      const diffY = (previewData.coords.y - e.clientY) / zoom;
+
+      const isRight = (e.target as HTMLElement).classList.contains('right');
+      const isLeft = (e.target as HTMLElement).classList.contains('left');
+      const isTop = (e.target as HTMLElement).classList.contains('top');
+      const isBottom = (e.target as HTMLElement).classList.contains('bottom');
+
+      data.struct.forEach((s: any) => {
+        if (s.label === 'EXTENT') {
+          s.sint32.forEach((s: any) => {
+            if (s.label === 'LEFT' && isLeft) s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
+            if (s.label === 'TOP' && isTop) s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
+
+            if (s.label === 'WIDTH') {
+              if (isRight) {
+                s.$t = Math.max(1, Math.floor(parseInt(s.$t) - diffX)).toString();
+              } else if (isLeft) {
+                s.$t = Math.max(1, Math.floor(parseInt(s.$t) + diffX)).toString();
+              }
+            }
+
+            if (s.label === 'HEIGHT') {
+              if (isBottom) {
+                s.$t = Math.max(1, Math.floor(parseInt(s.$t) - diffY)).toString();
+              } else if (isTop) {
+                s.$t = Math.max(1, Math.floor(parseInt(s.$t) + diffY)).toString();
+              }
+            }
+          });
+          this.props.updateData(this.props.data, () => {
+            this.props.updateZoom();
+          });
+        }
+      });
+    };
+
     return (
       <Fragment key={label}>
         <div
           onMouseDown={(e) => {
             e.stopPropagation();
-            if (data !== this.props.selected) this.props.updateSelected(data);
+            if (data !== selected) this.props.updateSelected(data);
           }}
           style={style}
           key={label}
           id={label}
-          draggable={data === this.props.selected}
+          draggable={data === selected}
           onDragStart={(e) => {
             // console.log(e.target);
-            if (data !== this.props.selected) return;
+            if (data !== selected) return;
 
             previewData.coords.x = e.clientX;
             previewData.coords.y = e.clientY;
@@ -156,7 +236,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
             e.dataTransfer.setDragImage(dragImageCache[label], offsetX, offsetY);
           }}
           onDragEnd={(e) => {
-            if (data !== this.props.selected) return;
+            if (data !== selected) return;
 
             const diffX = (previewData.coords.x - e.clientX) / zoom;
             const diffY = (previewData.coords.y - e.clientY) / zoom;
@@ -174,6 +254,38 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
             });
           }}
         >
+          {data === selected && (
+            <div className="handles">
+              <div
+                draggable
+                className={`left ${handleClass} ${horizontalClass}`}
+                style={{ left: -handleSize / 2 + selectionWidth / 2, top: height / 2 - handleSize / 2 }}
+                onDragStart={dragStartHandle}
+                onDragEnd={dragEndHandle}
+              />
+              <div
+                draggable
+                className={`right ${handleClass} ${horizontalClass}`}
+                style={{ right: -handleSize / 2 + selectionWidth / 2, top: height / 2 - handleSize / 2 }}
+                onDragStart={dragStartHandle}
+                onDragEnd={dragEndHandle}
+              />
+              <div
+                draggable
+                className={`top ${handleClass} ${verticalClass}`}
+                style={{ left: width / 2 - handleSize / 2, top: -handleSize / 2 + selectionWidth / 2 }}
+                onDragStart={dragStartHandle}
+                onDragEnd={dragEndHandle}
+              />
+              <div
+                draggable
+                className={`bottom ${handleClass} ${verticalClass}`}
+                style={{ left: width / 2 - handleSize / 2, bottom: -handleSize / 2 + selectionWidth / 2 }}
+                onDragStart={dragStartHandle}
+                onDragEnd={dragEndHandle}
+              />
+            </div>
+          )}
           {this.props.children}
         </div>
 

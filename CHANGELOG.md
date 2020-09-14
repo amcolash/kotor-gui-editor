@@ -6,8 +6,9 @@ This changelog keeps track of most (except early development) changes to the too
 
 ### Added
 
+- Drag handles to resize items
 - Support for extracting images from `.tpc` files
-- Added some missing data type controls (`uint32`, `double`, and `float`)
+- Missing data type controls (`uint32`, `double`, and `float`)
 
 ### Updated
 
