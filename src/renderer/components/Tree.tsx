@@ -1,19 +1,5 @@
 import React from 'react';
-import { CornerDownRight } from 'react-feather';
-import { cssRule } from 'typestyle';
-
-cssRule('.treeItem', {
-  padding: 2,
-  cursor: 'pointer',
-  $nest: {
-    '&.selected': {
-      backgroundColor: 'lime',
-    },
-    '&:hover': {
-      outline: '1px solid #ccc',
-    },
-  },
-});
+import TreeNode from './TreeNode';
 
 interface TreeProps {
   data: any; // TODO Typedefs
@@ -53,42 +39,16 @@ export default class Tree extends React.Component<TreeProps> {
     }
 
     return (
-      <div key={label}>
-        <div
-          className={'treeItem' + (data === this.props.selected ? ' selected' : '')}
-          onFocus={(e) => {
-            this.props.updateSelected(data);
-            e.stopPropagation();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') this.focusItem(1);
-            if (e.key === 'ArrowUp') this.focusItem(-1);
-          }}
-          tabIndex={0}
-        >
-          {isChild && <CornerDownRight size="12" style={{ marginRight: 4 }} />}
-          {label}
-        </div>
-        {children && <div style={{ marginLeft: 14 }}>{children}</div>}
-      </div>
+      <TreeNode
+        label={label}
+        data={data}
+        isChild={isChild || false}
+        selected={data === this.props.selected}
+        updateSelected={this.props.updateSelected}
+      >
+        {children}
+      </TreeNode>
     );
-  }
-
-  private focusItem(dir: number): void {
-    const focusableEls: HTMLElement[] = Array.from(document.querySelectorAll('.treeItem'));
-
-    const activeElement = document.activeElement;
-    let index = 0;
-    if (activeElement) {
-      for (let i = 0; i < focusableEls.length; i++) {
-        if (focusableEls[i] === activeElement) index = i;
-      }
-    }
-
-    index += dir;
-    index = Math.max(0, Math.min(index, focusableEls.length - 1));
-
-    focusableEls[index].focus();
   }
 
   public render() {

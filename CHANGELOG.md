@@ -12,6 +12,7 @@ This changelog keeps track of most (except early development) changes to the too
 
 - Various UI tweaks
 - Only do a partial extraction of images based on the `.gui` file
+- Refactor `Tree` into having `TreeNode` children
 
 ## 0.0.1: 09-13-2020
 
