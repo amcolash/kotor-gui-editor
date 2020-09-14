@@ -7,6 +7,7 @@ This changelog keeps track of most (except early development) changes to the too
 ### Added
 
 - Support for extracting images from `.tpc` files
+- Added some missing data type controls (`uint32`, `double`, and `float`)
 
 ### Updated
 

@@ -38,9 +38,24 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
         control = <input type="checkbox" checked={data.$t === '1'} onChange={(e) => cb({ ...data, $t: e.target.checked ? '1' : '0' })} />;
         break;
       case 'sint32':
+        control = (
+          <input type="number" value={data.$t} step="1" onChange={(e) => cb({ ...data, $t: parseFloat(e.target.value).toFixed(0) })} />
+        );
+        break;
       case 'uint32':
+        control = (
+          <input
+            type="number"
+            value={data.$t}
+            min="0"
+            step="1"
+            onChange={(e) => cb({ ...data, $t: parseFloat(e.target.value).toFixed(0) })}
+          />
+        );
+        break;
       case 'float':
-        control = <input type="number" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
+      case 'double':
+        control = <input type="number" step="0.01" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
         break;
       case 'struct':
         control = <div className={structName}>{this.props.children}</div>;
