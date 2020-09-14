@@ -1,5 +1,7 @@
 # Todo List
 
+## V1
+
 - [x] Refresh .png cache
 - [x] Proper zoom scaling for screen view
 - [x] Better drag icons
@@ -15,13 +17,17 @@
 - [x] Refactor draggable items out of Preview and into components
 - [x] Refactor ItemControl into components (was renamed to PropertyList)
 - [x] Resize Drag Handles
+- [x] Display primitive types like K-GFF
+- [ ] No need to download xoreos-tools manually
 - [ ] Icon + Name for App (maybe KGE - kotor gui editor)
-- [ ] Docs on usage
 - [ ] Clean up UI
 - [ ] Collapse Settings UI
-- [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
 - [ ] Undo stack
 - [ ] Write typedefs (at least partially)
+- [ ] Docs on usage
+
+## Post-V1
+
 - [ ] Math in numeric input boxes?
-- [ ] Display primitive types like K-GFF
+- [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
 - [ ] Automated tests? Maybe, but probably not...

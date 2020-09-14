@@ -111,7 +111,7 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
 
     return (
       <div key={label} className={itemStyle}>
-        {label}: {control}
+        {label} ({type}) {control}
       </div>
     );
   }
