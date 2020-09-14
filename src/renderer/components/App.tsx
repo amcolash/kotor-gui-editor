@@ -1,7 +1,9 @@
 import { exec } from 'child_process';
 import { remote } from 'electron';
+import * as escape from 'escape-path-with-spaces';
 import { exists, existsSync, readFile, writeFile } from 'fs';
 import { emptyDir, mkdirp } from 'fs-extra';
+import { platform } from 'os';
 import { basename, join, resolve } from 'path';
 import React from 'react';
 import tga2png from 'tga2png';
@@ -22,12 +24,12 @@ cssRule('body', {
 });
 
 interface AppState {
-  toolsPath?: string;
   tgaPath?: string;
   guiFile?: string;
   data: any;
   selected?: any;
   extracting?: string;
+  downloading?: string;
 }
 
 export const emptyDirAsync = promisify(emptyDir);
@@ -38,11 +40,15 @@ export const readFileAsync = promisify(readFile);
 export const writeFileAsync = promisify(writeFile);
 
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
+const os = platform().replace('-32', '').replace('darwin', 'mac');
+const root = resolve(remote.app.getAppPath(), '../../'); // Both in prod and in dev, this seems to be the right path (maybe not on mac)
+const toolsPath = escape(join(root, `xoreos-tools/xoreos-tools-0.0.6-${os}64/`));
+
+console.log('using tool path', toolsPath);
 
 export default class App extends React.Component<{}, AppState> {
   state: AppState = {
     data: '',
-    toolsPath: localStorage.getItem('toolsPath') || undefined,
     tgaPath: localStorage.getItem('tgaPath') || undefined,
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
@@ -51,10 +57,6 @@ export default class App extends React.Component<{}, AppState> {
   public componentDidMount() {
     this.loadGff();
   }
-
-  private checkPaths = () => {
-    return this.state.toolsPath && existsSync(this.state.toolsPath) && this.state.guiFile && existsSync(this.state.guiFile);
-  };
 
   private extractPng = async (clear?: boolean) => {
     if (this.state.tgaPath && this.state.data) {
@@ -120,10 +122,11 @@ export default class App extends React.Component<{}, AppState> {
             await tga2png(tgaPath, dest);
           } else if (await existsAsync(tpcPath)) {
             // TPC EXTRACTION
-            const resolvedTool = resolve(this.state.toolsPath!, 'xoreostex2tga');
+            const command = 'xoreostex2tga' + (platform() === 'win32' ? '.exe' : '');
+            const resolvedTool = resolve(toolsPath, command);
             const extractedTga = join(tgaTmpDir, items[i] + '.tga');
 
-            const args = [tpcPath, extractedTga];
+            const args = [escape(tpcPath), escape(extractedTga)];
             const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
             if (stdout) console.log(stdout);
             if (stderr) console.error(stderr);
@@ -140,12 +143,14 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   private loadGff = async () => {
-    if (this.checkPaths()) {
-      const resolvedTool = resolve(this.state.toolsPath!, 'gff2xml');
+    if (this.state.guiFile && existsSync(this.state.guiFile)) {
+      const command = 'gff2xml' + (platform() === 'win32' ? '.exe' : '');
+      const resolvedTool = resolve(toolsPath, command);
       const resolvedGui = resolve(this.state.guiFile!);
       const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
 
-      const args = ['--kotor', resolvedGui, resolvedXml];
+      console.log(command, resolvedTool);
+      const args = ['--kotor', escape(resolvedGui), escape(resolvedXml)];
 
       const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
       if (stdout) console.log(stdout);
@@ -169,15 +174,16 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   private saveGff = async () => {
-    if (this.checkPaths()) {
-      const resolvedTool = resolve(this.state.toolsPath!, 'xml2gff');
+    if (this.state.guiFile && existsSync(this.state.guiFile)) {
+      const command = 'xml2gff' + (platform() === 'win32' ? '.exe' : '');
+      const resolvedTool = resolve(toolsPath, command);
       const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-saved.xml'));
       const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
 
       const xml = toXml(this.state.data);
       await writeFileAsync(resolvedXml, xml);
 
-      const args = ['--kotor', resolvedXml, resolvedGui];
+      const args = ['--kotor', escape(resolvedXml), escape(resolvedGui)];
 
       const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
       if (stdout) console.log(stdout);
@@ -186,6 +192,14 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   public render() {
+    if (this.state.extracting) {
+      return (
+        <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <h2>Extracting PNGs from TGAs, please wait... {this.state.extracting}</h2>
+        </div>
+      );
+    }
+
     if (this.state.extracting) {
       return (
         <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -205,18 +219,8 @@ export default class App extends React.Component<{}, AppState> {
           flexDirection: 'column',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <FilePicker
-            label="Tools Path"
-            file={this.state.toolsPath}
-            filter="directory"
-            updateFile={(file) => {
-              this.setState({ toolsPath: file }, () => {
-                localStorage.setItem('toolsPath', file);
-              });
-            }}
-          />
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
             <FilePicker
               label="TGA Path"
               file={this.state.tgaPath}
@@ -231,7 +235,7 @@ export default class App extends React.Component<{}, AppState> {
             />
             <Button onClick={() => this.extractPng(true)}>Reload Assets</Button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
             <FilePicker
               label="GUI File"
               file={this.state.guiFile}

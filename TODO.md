@@ -18,8 +18,10 @@
 - [x] Refactor ItemControl into components (was renamed to PropertyList)
 - [x] Resize Drag Handles
 - [x] Display primitive types like K-GFF
-- [ ] No need to download xoreos-tools manually
-- [ ] Icon + Name for App (maybe KGE - kotor gui editor)
+- [x] Name for App (maybe KGE - kotor gui editor)
+- [x] No need to download xoreos-tools manually
+  - [ ] Test that this actually works cross platform
+- [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
 - [ ] Collapse Settings UI
 - [ ] Undo stack

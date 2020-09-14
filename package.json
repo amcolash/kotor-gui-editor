@@ -23,6 +23,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "escape-path-with-spaces": "^1.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-feather": "^2.0.8",
@@ -53,6 +54,9 @@
     "productName": "KotOR GUI Editor",
     "publish": [
       "github"
+    ],
+    "extraFiles": [
+      "xoreos-tools/xoreos-tools-0.0.6-${os}64/**/*"
     ],
     "linux": {
       "category": "Utility"

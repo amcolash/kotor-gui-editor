@@ -2,6 +2,16 @@
 
 This changelog keeps track of most (except early development) changes to the tool
 
+## 0.0.3: 09-14-2020
+
+### Updated
+
+- No longer need to reference `xoreos-tools` directory, tools are bundled in
+
+### Fixed
+
+- Escape all file paths to try and make things better cross platform
+
 ## 0.0.2: 09-13-2020
 
 ### Added
