@@ -94,10 +94,9 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
         data={data}
         selected={this.props.selected}
         updateSelected={this.props.updateSelected}
-        updateData={this.props.updateData}
+        updateData={() => this.props.updateData(this.props.data, () => this.updateZoom())}
         pseudoChildren={pseudoChildren}
         previewData={this.previewData}
-        updateZoom={this.updateZoom}
         zoom={this.state.zoom}
       >
         {children}

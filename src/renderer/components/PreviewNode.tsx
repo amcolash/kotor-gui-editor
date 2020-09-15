@@ -37,9 +37,8 @@ interface PreviewNodeProps {
   data: any;
   label: string;
   selected: any;
-  updateData: (data: any, cb: () => void) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
+  updateData: () => void;
   updateSelected: (data: any) => void;
-  updateZoom: () => void;
   pseudoChildren: JSX.Element[];
   previewData: PreviewData;
   zoom: number;
@@ -204,9 +203,8 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
               }
             }
           });
-          this.props.updateData(this.props.data, () => {
-            this.props.updateZoom();
-          });
+
+          this.props.updateData();
         }
       });
     };
@@ -247,9 +245,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
                   if (s.label === 'TOP') s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
                   if (s.label === 'LEFT') s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
                 });
-                this.props.updateData(this.props.data, () => {
-                  this.props.updateZoom();
-                });
+                this.props.updateData();
               }
             });
           }}

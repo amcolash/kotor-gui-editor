@@ -155,7 +155,6 @@ export default class App extends React.Component<{}, AppState> {
 
               if (stdout) console.log(stdout);
               if (stderr) {
-                console.error('HEREEEEEE');
                 throw stderr;
               }
 
@@ -240,6 +239,12 @@ export default class App extends React.Component<{}, AppState> {
     }
   };
 
+  private updateData = (data: any, cb?: () => void) => {
+    this.setState({ data }, () => {
+      if (cb) cb();
+    });
+  };
+
   public render() {
     if (this.state.extracting) {
       return (
@@ -314,9 +319,9 @@ export default class App extends React.Component<{}, AppState> {
             data={this.state.data}
             selected={this.state.selected}
             updateSelected={(selected: any) => this.setState({ selected })}
-            updateData={(data, cb) => this.setState(data, () => cb())}
+            updateData={this.updateData}
           />
-          <PropertyList selected={this.state.selected} updateData={(data) => this.setState(data)} data={this.state.data} />
+          <PropertyList selected={this.state.selected} updateData={this.updateData} data={this.state.data} />
         </div>
       </div>
     );
