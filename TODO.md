@@ -20,7 +20,9 @@
 - [x] Display primitive types like K-GFF
 - [x] Name for App (maybe KGE - kotor gui editor)
 - [x] No need to download xoreos-tools manually
-  - [ ] Test that this actually works cross platform
+  - [x] Linux
+  - [ ] MacOS - No to catalina, maybe lesser versions w/o binary signing
+  - [ ] Windows
 - [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
 - [ ] Collapse Settings UI

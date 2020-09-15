@@ -4,9 +4,11 @@ import { remote } from 'electron';
 import * as escape from 'escape-path-with-spaces';
 import { exists, existsSync, readFile, writeFile } from 'fs';
 import { emptyDir, mkdirp } from 'fs-extra';
+import { bind } from 'mousetrap';
 import { platform } from 'os';
 import { basename, join, resolve } from 'path';
 import React from 'react';
+import { Terminal } from 'react-feather';
 import tga2png from 'tga2png';
 import { cssRule } from 'typestyle';
 import { promisify } from 'util';
@@ -56,6 +58,8 @@ export default class App extends React.Component<{}, AppState> {
   // TODO: Only for dev
   public componentDidMount() {
     this.loadGff();
+
+    bind(['ctrl+shift+i', 'command+option+i'], () => remote.getCurrentWindow().webContents.toggleDevTools());
   }
 
   private commandInPath = async (command: string): Promise<boolean> => {
@@ -140,6 +144,7 @@ export default class App extends React.Component<{}, AppState> {
 
               const args = [escape(tpcPath), escape(extractedTga)];
               const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+
               if (stdout) console.log(stdout);
               if (stderr) {
                 console.error('HEREEEEEE');
@@ -171,10 +176,9 @@ export default class App extends React.Component<{}, AppState> {
         const resolvedGui = resolve(this.state.guiFile!);
         const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
 
-        console.log(command, resolvedTool);
         const args = ['--kotor', escape(resolvedGui), escape(resolvedXml)];
-
         const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+
         if (stdout) console.log(stdout);
         if (stderr) {
           if (stderr.trim() !== `Converted "${resolvedGui}" to "${resolvedXml}"`) {
@@ -219,8 +223,8 @@ export default class App extends React.Component<{}, AppState> {
         await writeFileAsync(resolvedXml, xml);
 
         const args = ['--kotor', escape(resolvedXml), escape(resolvedGui)];
-
         const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+
         if (stdout) console.log(stdout);
         if (stderr) throw stderr;
       } catch (e) {
@@ -264,7 +268,9 @@ export default class App extends React.Component<{}, AppState> {
               }}
               style={{ flex: 1 }}
             />
-            <Button onClick={() => this.extractPng(true)}>Reload Assets</Button>
+            <Button onClick={() => this.extractPng(true)} title="Reload all images">
+              Reload Images
+            </Button>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
             <FilePicker
@@ -279,8 +285,20 @@ export default class App extends React.Component<{}, AppState> {
               }}
               style={{ flex: 1 }}
             />
-            <Button onClick={this.loadGff}>Revert</Button>
-            <Button onClick={this.saveGff}>Save</Button>
+            <Button onClick={this.loadGff} title="Revert all unsaved changes">
+              Revert
+            </Button>
+            <Button onClick={this.saveGff} title="Save .gui file">
+              Save
+            </Button>
+
+            <Button
+              onClick={(e) => remote.getCurrentWindow().webContents.toggleDevTools()}
+              style={{ marginLeft: 10, background: '#333' }}
+              title="Debugging Tools"
+            >
+              <Terminal size="16" style={{ marginBottom: -3, color: '#eee' }} />
+            </Button>
           </div>
         </div>
 
