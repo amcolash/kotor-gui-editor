@@ -23,10 +23,10 @@
   - [x] Linux
   - [ ] MacOS - No to catalina, maybe lesser versions w/o binary signing
   - [ ] Windows
+- [ ] Undo stack
 - [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
 - [ ] Collapse Settings UI
-- [ ] Undo stack
 - [ ] Write typedefs (at least partially)
 - [ ] Docs on usage
 

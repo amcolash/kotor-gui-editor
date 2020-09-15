@@ -59,7 +59,15 @@ export default class App extends React.Component<{}, AppState> {
   public componentDidMount() {
     this.loadGff();
 
+    window.onerror = this.handleError;
+
     bind(['ctrl+shift+i', 'command+option+i'], () => remote.getCurrentWindow().webContents.toggleDevTools());
+    bind('mod+r', () => remote.getCurrentWindow().reload());
+  }
+
+  private handleError(e: any) {
+    console.error(e);
+    remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error', buttons: ['Ok'] });
   }
 
   private commandInPath = async (command: string): Promise<boolean> => {
@@ -160,8 +168,7 @@ export default class App extends React.Component<{}, AppState> {
 
         this.setState({ extracting: undefined });
       } catch (e) {
-        console.error(e);
-        remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error' });
+        this.handleError(e);
       }
     }
   };
@@ -169,6 +176,7 @@ export default class App extends React.Component<{}, AppState> {
   private loadGff = async () => {
     if (this.state.guiFile && existsSync(this.state.guiFile)) {
       let data;
+
       try {
         const command = 'gff2xml' + (platform() === 'win32' ? '.exe' : '');
         const inPath = await this.commandInPath(command);
@@ -196,8 +204,7 @@ export default class App extends React.Component<{}, AppState> {
           arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
         });
       } catch (e) {
-        console.error(e);
-        remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error' });
+        this.handleError(e);
       }
 
       // Keep this block outside of the try/catch so that it is handled properly elsewhere
@@ -228,8 +235,7 @@ export default class App extends React.Component<{}, AppState> {
         if (stdout) console.log(stdout);
         if (stderr) throw stderr;
       } catch (e) {
-        console.error(e);
-        remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error' });
+        this.handleError(e);
       }
     }
   };
