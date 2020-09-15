@@ -1,4 +1,5 @@
 import { exec } from 'child_process';
+import * as commandExists from 'command-exists';
 import { remote } from 'electron';
 import * as escape from 'escape-path-with-spaces';
 import { exists, existsSync, readFile, writeFile } from 'fs';
@@ -29,7 +30,6 @@ interface AppState {
   data: any;
   selected?: any;
   extracting?: string;
-  downloading?: string;
 }
 
 export const emptyDirAsync = promisify(emptyDir);
@@ -58,148 +58,179 @@ export default class App extends React.Component<{}, AppState> {
     this.loadGff();
   }
 
+  private commandInPath = async (command: string): Promise<boolean> => {
+    try {
+      await commandExists(command);
+      return true;
+    } catch (e) {
+      // Command does not exist
+      return false;
+    }
+  };
+
   private extractPng = async (clear?: boolean) => {
     if (this.state.tgaPath && this.state.data) {
-      this.setState({ extracting: '' });
+      try {
+        this.setState({ extracting: '' });
 
-      const imageSet: Set<string> = new Set();
+        const imageSet: Set<string> = new Set();
 
-      const checkNode = (data: any) => {
-        if (data.struct) {
-          data.struct.forEach((s: any) => {
-            if (s.label === 'BORDER') {
-              let showImg = false;
-              s.sint32.forEach((s: any) => {
-                if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
-              });
-
-              if (showImg) {
-                s.resref.forEach((s: any) => {
-                  if (s.label === 'FILL' && s.$t) imageSet.add(s.$t);
+        const checkNode = (data: any) => {
+          if (data.struct) {
+            data.struct.forEach((s: any) => {
+              if (s.label === 'BORDER') {
+                let showImg = false;
+                s.sint32.forEach((s: any) => {
+                  if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
                 });
+
+                if (showImg) {
+                  s.resref.forEach((s: any) => {
+                    if (s.label === 'FILL' && s.$t) imageSet.add(s.$t);
+                  });
+                }
               }
+            });
+          }
+
+          if (data.list?.struct) {
+            data.list.struct.forEach((s: any) => {
+              checkNode(s);
+            });
+          }
+        };
+
+        const root = this.state.data.gff3.struct[0];
+        checkNode(root);
+
+        const items = Array.from(imageSet);
+        // console.log('extracting images:', items);
+
+        const resolvedTgaPath = resolve(this.state.tgaPath);
+
+        const destDir = join(tmpDir, 'png');
+        await mkdirpAsync(destDir);
+
+        const tgaTmpDir = join(tmpDir, 'tga');
+        await mkdirpAsync(tgaTmpDir);
+
+        if (clear) {
+          await emptyDirAsync(destDir);
+          await emptyDirAsync(tgaTmpDir);
+        }
+
+        for (let i = 0; i < items.length; i++) {
+          this.setState({ extracting: `(${i + 1}/${items.length})` });
+
+          const tgaPath = join(resolvedTgaPath, items[i] + '.tga');
+          const tpcPath = join(resolvedTgaPath, items[i] + '.tpc');
+
+          const dest = join(destDir, items[i] + '.png');
+
+          if (!(await existsAsync(dest))) {
+            if (await existsAsync(tgaPath)) {
+              // TGA EXTRACTION
+              await tga2png(tgaPath, dest);
+            } else if (await existsAsync(tpcPath)) {
+              // TPC EXTRACTION
+              const command = 'xoreostex2tga' + (platform() === 'win32' ? '.exe' : '');
+              const inPath = await this.commandInPath(command);
+              const resolvedTool = inPath ? command : resolve(toolsPath, command);
+              const extractedTga = join(tgaTmpDir, items[i] + '.tga');
+
+              const args = [escape(tpcPath), escape(extractedTga)];
+              const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+              if (stdout) console.log(stdout);
+              if (stderr) {
+                console.error('HEREEEEEE');
+                throw stderr;
+              }
+
+              await tga2png(extractedTga, dest);
+            } else {
+              console.log('no image found for', items[i]);
             }
-          });
-        }
-
-        if (data.list?.struct) {
-          data.list.struct.forEach((s: any) => {
-            checkNode(s);
-          });
-        }
-      };
-
-      const root = this.state.data.gff3.struct[0];
-      checkNode(root);
-
-      const items = Array.from(imageSet);
-      // console.log('extracting images:', items);
-
-      const resolvedTgaPath = resolve(this.state.tgaPath);
-
-      const destDir = join(tmpDir, 'png');
-      await mkdirpAsync(destDir);
-
-      const tgaTmpDir = join(tmpDir, 'tga');
-      await mkdirpAsync(tgaTmpDir);
-
-      if (clear) {
-        await emptyDirAsync(destDir);
-        await emptyDirAsync(tgaTmpDir);
-      }
-
-      for (let i = 0; i < items.length; i++) {
-        this.setState({ extracting: `(${i + 1}/${items.length})` });
-
-        const tgaPath = join(resolvedTgaPath, items[i] + '.tga');
-        const tpcPath = join(resolvedTgaPath, items[i] + '.tpc');
-
-        const dest = join(destDir, items[i] + '.png');
-
-        if (!(await existsAsync(dest))) {
-          if (await existsAsync(tgaPath)) {
-            // TGA EXTRACTION
-            await tga2png(tgaPath, dest);
-          } else if (await existsAsync(tpcPath)) {
-            // TPC EXTRACTION
-            const command = 'xoreostex2tga' + (platform() === 'win32' ? '.exe' : '');
-            const resolvedTool = resolve(toolsPath, command);
-            const extractedTga = join(tgaTmpDir, items[i] + '.tga');
-
-            const args = [escape(tpcPath), escape(extractedTga)];
-            const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
-            if (stdout) console.log(stdout);
-            if (stderr) console.error(stderr);
-
-            await tga2png(extractedTga, dest);
-          } else {
-            console.log('no image found for', items[i]);
           }
         }
-      }
 
-      this.setState({ extracting: undefined });
+        this.setState({ extracting: undefined });
+      } catch (e) {
+        console.error(e);
+        remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error' });
+      }
     }
   };
 
   private loadGff = async () => {
     if (this.state.guiFile && existsSync(this.state.guiFile)) {
-      const command = 'gff2xml' + (platform() === 'win32' ? '.exe' : '');
-      const resolvedTool = resolve(toolsPath, command);
-      const resolvedGui = resolve(this.state.guiFile!);
-      const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
+      let data;
+      try {
+        const command = 'gff2xml' + (platform() === 'win32' ? '.exe' : '');
+        const inPath = await this.commandInPath(command);
+        const resolvedTool = inPath ? command : resolve(toolsPath, command);
+        const resolvedGui = resolve(this.state.guiFile!);
+        const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
 
-      console.log(command, resolvedTool);
-      const args = ['--kotor', escape(resolvedGui), escape(resolvedXml)];
+        console.log(command, resolvedTool);
+        const args = ['--kotor', escape(resolvedGui), escape(resolvedXml)];
 
-      const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
-      if (stdout) console.log(stdout);
-      if (stderr) console.error(stderr);
+        const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+        if (stdout) console.log(stdout);
+        if (stderr) {
+          if (stderr.trim() !== `Converted "${resolvedGui}" to "${resolvedXml}"`) {
+            throw stderr;
+          }
+        }
 
-      const xml = await readFileAsync(resolvedXml);
+        const xml = await readFileAsync(resolvedXml);
 
-      const data = toJson(xml, {
-        object: true,
-        reversible: true,
-        sanitize: true,
-        trim: true,
-        arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
-      });
+        data = toJson(xml, {
+          object: true,
+          reversible: true,
+          sanitize: true,
+          trim: true,
+          arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
+        });
+      } catch (e) {
+        console.error(e);
+        remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error' });
+      }
 
-      this.setState({ data, selected: undefined }, () => {
-        console.log('data', this.state.data);
-        this.extractPng();
-      });
+      // Keep this block outside of the try/catch so that it is handled properly elsewhere
+      if (data) {
+        this.setState({ data, selected: undefined }, () => {
+          console.log('data', this.state.data);
+          this.extractPng();
+        });
+      }
     }
   };
 
   private saveGff = async () => {
     if (this.state.guiFile && existsSync(this.state.guiFile)) {
-      const command = 'xml2gff' + (platform() === 'win32' ? '.exe' : '');
-      const resolvedTool = resolve(toolsPath, command);
-      const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-saved.xml'));
-      const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
+      try {
+        const command = 'xml2gff' + (platform() === 'win32' ? '.exe' : '');
+        const inPath = await this.commandInPath(command);
+        const resolvedTool = inPath ? command : resolve(toolsPath, command);
+        const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-saved.xml'));
+        const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
 
-      const xml = toXml(this.state.data);
-      await writeFileAsync(resolvedXml, xml);
+        const xml = toXml(this.state.data);
+        await writeFileAsync(resolvedXml, xml);
 
-      const args = ['--kotor', escape(resolvedXml), escape(resolvedGui)];
+        const args = ['--kotor', escape(resolvedXml), escape(resolvedGui)];
 
-      const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
-      if (stdout) console.log(stdout);
-      if (stderr) console.error(stderr);
+        const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+        if (stdout) console.log(stdout);
+        if (stderr) throw stderr;
+      } catch (e) {
+        console.error(e);
+        remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error' });
+      }
     }
   };
 
   public render() {
-    if (this.state.extracting) {
-      return (
-        <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <h2>Extracting PNGs from TGAs, please wait... {this.state.extracting}</h2>
-        </div>
-      );
-    }
-
     if (this.state.extracting) {
       return (
         <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

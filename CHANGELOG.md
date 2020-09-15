@@ -7,6 +7,8 @@ This changelog keeps track of most (except early development) changes to the too
 ### Added
 
 - Add portable build for windows
+- Attempt to use local version of tools if they are in `PATH`
+- Error messages to user instead of silently failing
 
 ### Updated
 
