@@ -25,7 +25,7 @@
   - [ ] Windows
 - [x] Undo stack
   - [ ] Group changes together so that typing into inputs is a single final event. Most likely do diffs to see what was modified and keep updating the old undo stack item
-- [ ] Redo stack
+- [x] Redo stack
 - [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
   - [ ] Dark / Light mode

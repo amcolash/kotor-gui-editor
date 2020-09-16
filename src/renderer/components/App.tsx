@@ -30,7 +30,8 @@ interface AppState {
   tgaPath?: string;
   guiFile?: string;
   data: any;
-  undoStack: any[];
+  history: any[];
+  historyIndex: number;
   selected?: any;
   extracting?: string;
 }
@@ -52,7 +53,8 @@ console.log('using tool path', toolsPath);
 export default class App extends React.Component<{}, AppState> {
   state: AppState = {
     data: '',
-    undoStack: [],
+    history: [],
+    historyIndex: 1,
     tgaPath: localStorage.getItem('tgaPath') || undefined,
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
@@ -64,8 +66,9 @@ export default class App extends React.Component<{}, AppState> {
     window.onerror = this.handleError;
 
     bind(['ctrl+shift+i', 'command+option+i'], () => remote.getCurrentWindow().webContents.toggleDevTools());
-    bind('mod+r', () => remote.getCurrentWindow().reload());
+    bind(['mod+r', 'shift+mod+r'], () => remote.getCurrentWindow().reload());
     bind('mod+z', () => this.undo());
+    bind(['mod+y', 'shift+mod+z'], () => this.redo());
   }
 
   private handleError(e: any) {
@@ -215,7 +218,7 @@ export default class App extends React.Component<{}, AppState> {
 
       // Keep this block outside of the try/catch so that it is handled properly elsewhere
       if (data) {
-        this.setState({ data: this.clone(data), undoStack: [this.clone(data)], selected: undefined }, () => {
+        this.setState({ data: this.clone(data), history: [this.clone(data)], historyIndex: 1, selected: undefined }, () => {
           console.log('data', this.state.data);
           this.extractPng();
         });
@@ -247,16 +250,38 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   private updateData = (data: any, cb?: () => void) => {
-    this.setState({ data, undoStack: [...this.state.undoStack, this.clone(this.state.data)] }, () => {
+    let history = [...this.state.history, this.clone(this.state.data)];
+
+    // Slice out history that will not be able to be re-done
+    if (this.state.historyIndex > 1) {
+      history = [...history.slice(0, this.state.history.length - this.state.historyIndex + 1), this.clone(data)];
+    }
+
+    // Cap undo stack to 50 just in case for now...
+    const maxUndoSize = 50;
+    if (history.length > maxUndoSize - 1) history = history.slice(history.length - maxUndoSize);
+
+    this.setState({ data, history, historyIndex: 1 }, () => {
       if (cb) cb();
     });
   };
 
   private undo() {
-    if (this.state.undoStack.length > 1) {
+    const historyIndex = this.state.historyIndex + 1;
+    if (this.state.history.length >= historyIndex) {
       this.setState({
-        data: this.clone(this.state.undoStack[this.state.undoStack.length - 2]),
-        undoStack: this.state.undoStack.slice(0, this.state.undoStack.length - 1),
+        data: this.clone(this.state.history[this.state.history.length - historyIndex]),
+        historyIndex,
+      });
+    }
+  }
+
+  private redo() {
+    const historyIndex = this.state.historyIndex - 1;
+    if (historyIndex > 0) {
+      this.setState({
+        data: this.clone(this.state.history[this.state.history.length - historyIndex]),
+        historyIndex,
       });
     }
   }
@@ -282,6 +307,7 @@ export default class App extends React.Component<{}, AppState> {
         }}
       >
         <div style={{ display: 'flex' }}>
+          History: {this.state.history.length}, Index:{this.state.historyIndex}
           <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
             <FilePicker
               label="TGA Path"
