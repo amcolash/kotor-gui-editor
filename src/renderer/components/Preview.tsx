@@ -1,4 +1,5 @@
 import React, { createRef } from 'react';
+import { getLabel } from '../../util/DataUtil';
 import PreviewNode from './PreviewNode';
 
 interface PreviewProps {
@@ -56,16 +57,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
   };
 
   private makeNode(data: any): JSX.Element {
-    let label: string = '';
-    if (data.exostring) {
-      if (data.exostring.label === 'TAG') label = data.exostring.$t;
-      else if (Array.isArray(data.exostring)) {
-        data.exostring.forEach((e: any) => {
-          if (e.label === 'TAG') label += e.$t;
-          if (e.label === 'Obj_Parent') label += e.$t;
-        });
-      }
-    }
+    const label = getLabel(data);
 
     // Children are true child elements
     // It matters for proper preview layout (nested or sibling in DOM)

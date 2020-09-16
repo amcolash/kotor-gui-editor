@@ -1,20 +1,15 @@
-import { exec } from 'child_process';
-import * as commandExists from 'command-exists';
 import { detailedDiff } from 'deep-object-diff';
 import { remote } from 'electron';
 import * as escape from 'escape-path-with-spaces';
-import { exists, existsSync, readFile, writeFile } from 'fs';
-import { emptyDir, mkdirp } from 'fs-extra';
 import { bind, bindGlobal } from 'mousetrap';
 import 'mousetrap-global-bind';
 import { platform } from 'os';
-import { basename, join, resolve } from 'path';
+import { join, resolve } from 'path';
 import React from 'react';
 import { Terminal } from 'react-feather';
-import tga2png from 'tga2png';
 import { cssRule } from 'typestyle';
-import { promisify } from 'util';
-import { toJson, toXml } from 'xml2json';
+import { clone, getPath } from '../../util/DataUtil';
+import { extractPng, loadGff, saveGff } from '../../util/XoreosTools';
 import Button from './Button';
 import FilePicker from './FilePicker';
 import Preview from './Preview';
@@ -28,7 +23,7 @@ cssRule('body', {
   fontFamily: 'sans-serif',
 });
 
-interface AppState {
+export interface AppState {
   data: any;
   history: any[];
   historyIndex: number;
@@ -38,13 +33,6 @@ interface AppState {
   selected?: any;
   extracting?: string;
 }
-
-export const emptyDirAsync = promisify(emptyDir);
-export const execAsync = promisify(exec);
-export const existsAsync = promisify(exists);
-export const mkdirpAsync = promisify(mkdirp);
-export const readFileAsync = promisify(readFile);
-export const writeFileAsync = promisify(writeFile);
 
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 const os = platform().replace('-32', '').replace('darwin', 'mac');
@@ -65,7 +53,7 @@ export default class App extends React.Component<{}, AppState> {
 
   // TODO: Only for dev
   public componentDidMount() {
-    this.loadGff();
+    this.load();
 
     window.onerror = this.handleError;
 
@@ -74,11 +62,11 @@ export default class App extends React.Component<{}, AppState> {
 
     // Override undo/redo in text boxes
     bindGlobal('mod+z', () => {
-      this.undo();
+      this.changeHistory(1);
       return false;
     });
     bindGlobal(['mod+y', 'shift+mod+z'], () => {
-      this.redo();
+      this.changeHistory(-1);
       return false;
     });
   }
@@ -88,202 +76,30 @@ export default class App extends React.Component<{}, AppState> {
     remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error', buttons: ['Ok'] });
   }
 
-  private clone(d: any) {
-    return JSON.parse(JSON.stringify(d));
+  private extract(clear?: boolean) {
+    if (!this.state.tgaPath) return;
+
+    extractPng(this.state.tgaPath, toolsPath, this.state.data, (s: any) => this.setState(s), this.handleError, clear);
   }
 
-  private commandInPath = async (command: string): Promise<boolean> => {
-    try {
-      await commandExists(command);
-      return true;
-    } catch (e) {
-      // Command does not exist
-      return false;
-    }
-  };
+  private load() {
+    if (!this.state.guiFile) return;
 
-  private extractPng = async (clear?: boolean) => {
-    if (this.state.tgaPath && this.state.data) {
-      try {
-        this.setState({ extracting: '' });
-
-        const imageSet: Set<string> = new Set();
-
-        const checkNode = (data: any) => {
-          if (data.struct) {
-            data.struct.forEach((s: any) => {
-              if (s.label === 'BORDER') {
-                let showImg = false;
-                s.sint32.forEach((s: any) => {
-                  if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
-                });
-
-                if (showImg) {
-                  s.resref.forEach((s: any) => {
-                    if (s.label === 'FILL' && s.$t) imageSet.add(s.$t);
-                  });
-                }
-              }
-            });
-          }
-
-          if (data.list?.struct) {
-            data.list.struct.forEach((s: any) => {
-              checkNode(s);
-            });
-          }
-        };
-
-        const root = this.state.data.gff3.struct[0];
-        checkNode(root);
-
-        const items = Array.from(imageSet);
-        // console.log('extracting images:', items);
-
-        const resolvedTgaPath = resolve(this.state.tgaPath);
-
-        const destDir = join(tmpDir, 'png');
-        await mkdirpAsync(destDir);
-
-        const tgaTmpDir = join(tmpDir, 'tga');
-        await mkdirpAsync(tgaTmpDir);
-
-        if (clear) {
-          await emptyDirAsync(destDir);
-          await emptyDirAsync(tgaTmpDir);
-        }
-
-        for (let i = 0; i < items.length; i++) {
-          this.setState({ extracting: `(${i + 1}/${items.length})` });
-
-          const tgaPath = join(resolvedTgaPath, items[i] + '.tga');
-          const tpcPath = join(resolvedTgaPath, items[i] + '.tpc');
-
-          const dest = join(destDir, items[i] + '.png');
-
-          if (!(await existsAsync(dest))) {
-            if (await existsAsync(tgaPath)) {
-              // TGA EXTRACTION
-              await tga2png(tgaPath, dest);
-            } else if (await existsAsync(tpcPath)) {
-              // TPC EXTRACTION
-              const command = 'xoreostex2tga' + (platform() === 'win32' ? '.exe' : '');
-              const inPath = await this.commandInPath(command);
-              const resolvedTool = inPath ? command : resolve(toolsPath, command);
-              const extractedTga = join(tgaTmpDir, items[i] + '.tga');
-
-              const args = [escape(tpcPath), escape(extractedTga)];
-              const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
-
-              if (stdout) console.log(stdout);
-              if (stderr) {
-                throw stderr;
-              }
-
-              await tga2png(extractedTga, dest);
-            } else {
-              console.log('no image found for', items[i]);
-            }
-          }
-        }
-
-        this.setState({ extracting: undefined });
-      } catch (e) {
-        this.handleError(e);
-      }
-    }
-  };
-
-  private loadGff = async () => {
-    if (this.state.guiFile && existsSync(this.state.guiFile)) {
-      let data;
-
-      try {
-        const command = 'gff2xml' + (platform() === 'win32' ? '.exe' : '');
-        const inPath = await this.commandInPath(command);
-        const resolvedTool = inPath ? command : resolve(toolsPath, command);
-        const resolvedGui = resolve(this.state.guiFile!);
-        const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-loaded.xml'));
-
-        const args = ['--kotor', escape(resolvedGui), escape(resolvedXml)];
-        const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
-
-        if (stdout) console.log(stdout);
-        if (stderr) {
-          if (stderr.trim() !== `Converted "${resolvedGui}" to "${resolvedXml}"`) {
-            throw stderr;
-          }
-        }
-
-        const xml = await readFileAsync(resolvedXml);
-
-        data = toJson(xml, {
-          object: true,
-          reversible: true,
-          sanitize: true,
-          trim: true,
-          arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
+    loadGff(
+      this.state.guiFile,
+      toolsPath,
+      (s: any) => {
+        this.setState(s, () => {
+          console.log('data', s.data);
+          this.extract();
         });
-      } catch (e) {
-        this.handleError(e);
-      }
-
-      // Keep this block outside of the try/catch so that it is handled properly elsewhere
-      if (data) {
-        this.setState(
-          { data: this.clone(data), history: [this.clone(data)], historyIndex: 1, lastUpdated: '', selected: undefined },
-          () => {
-            console.log('data', this.state.data);
-            this.extractPng();
-          }
-        );
-      }
-    }
-  };
-
-  private saveGff = async () => {
-    if (this.state.guiFile && existsSync(this.state.guiFile)) {
-      try {
-        const command = 'xml2gff' + (platform() === 'win32' ? '.exe' : '');
-        const inPath = await this.commandInPath(command);
-        const resolvedTool = inPath ? command : resolve(toolsPath, command);
-        const resolvedXml = resolve(tmpDir, basename(this.state.guiFile! + '-saved.xml'));
-        const resolvedGui = resolve(this.state.guiFile! + '-new.gui');
-
-        const xml = toXml(this.state.data);
-        await writeFileAsync(resolvedXml, xml);
-
-        const args = ['--kotor', escape(resolvedXml), escape(resolvedGui)];
-        const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
-
-        if (stdout) console.log(stdout);
-        if (stderr) throw stderr;
-      } catch (e) {
-        this.handleError(e);
-      }
-    }
-  };
-
-  // Generate a path string (only works if there is a singular item at the bottom of the tree)
-  private getPath(diff: any): string {
-    if (typeof diff !== 'object') return diff;
-
-    const keys = Object.keys(diff);
-    if (keys.length === 0) {
-      return '';
-    } else if (keys.length === 1) {
-      if (typeof diff[keys[0]] !== 'object') {
-        return keys[0];
-      }
-
-      return keys[0] + '.' + this.getPath(diff[keys[0]]);
-    }
-
-    throw 'Multiple changes';
+      },
+      this.handleError
+    );
   }
 
   private updateData = (data: any, cb?: () => void) => {
-    let history = [...this.state.history, this.clone(this.state.data)];
+    let history = [...this.state.history, clone(this.state.data)];
 
     // Determine if we need to update the last history item or make a new entry (so things like rename won't blow up history stack)
     const diff: any = detailedDiff(this.state.history[this.state.history.length - 1], data);
@@ -295,11 +111,11 @@ export default class App extends React.Component<{}, AppState> {
     // Check only if something was updated
     if (wasUpdated && !wasAdded && !wasDeleted) {
       try {
-        lastUpdated = this.getPath(diff.updated);
+        lastUpdated = getPath(diff.updated);
 
         // Rewrite the last history entry w/ new data
         if (this.state.lastUpdated === lastUpdated) {
-          history = [...this.state.history.slice(0, this.state.history.length - 1), this.clone(this.state.data)];
+          history = [...this.state.history.slice(0, this.state.history.length - 1), clone(this.state.data)];
         }
       } catch (e) {
         // Multiple things were changed, don't do anything special
@@ -308,7 +124,7 @@ export default class App extends React.Component<{}, AppState> {
 
     // Slice out history that will not be able to be re-done
     if (this.state.historyIndex > 1) {
-      history = [...history.slice(0, this.state.history.length - this.state.historyIndex + 1), this.clone(data)];
+      history = [...history.slice(0, this.state.history.length - this.state.historyIndex + 1), clone(data)];
     }
 
     // Cap undo stack to 50 just in case for now...
@@ -320,25 +136,13 @@ export default class App extends React.Component<{}, AppState> {
     });
   };
 
-  private undo() {
-    console.log('undo');
+  // Careful! Rewriting the past can lead to all kinds of wrinkles in the fabric of time
+  private changeHistory(dir: number) {
+    const historyIndex = this.state.historyIndex + dir;
+    if (historyIndex > 0 && this.state.history.length >= historyIndex) {
+      const data = clone(this.state.history[this.state.history.length - historyIndex]);
 
-    const historyIndex = this.state.historyIndex + 1;
-    if (this.state.history.length >= historyIndex) {
-      this.setState({
-        data: this.clone(this.state.history[this.state.history.length - historyIndex]),
-        historyIndex,
-      });
-    }
-  }
-
-  private redo() {
-    const historyIndex = this.state.historyIndex - 1;
-    if (historyIndex > 0) {
-      this.setState({
-        data: this.clone(this.state.history[this.state.history.length - historyIndex]),
-        historyIndex,
-      });
+      this.setState({ data, historyIndex });
     }
   }
 
@@ -363,21 +167,20 @@ export default class App extends React.Component<{}, AppState> {
         }}
       >
         <div style={{ display: 'flex' }}>
-          History: {this.state.history.length}, Index:{this.state.historyIndex}, Last Updated: {this.state.lastUpdated}
           <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
             <FilePicker
-              label="TGA Path"
+              label="UI Image Path"
               file={this.state.tgaPath}
               filter="directory"
               updateFile={(file) => {
                 this.setState({ tgaPath: file }, () => {
                   localStorage.setItem('tgaPath', file);
-                  this.extractPng(true);
+                  this.extract(true);
                 });
               }}
               style={{ flex: 1 }}
             />
-            <Button onClick={() => this.extractPng(true)} title="Reload all images">
+            <Button onClick={() => this.extract(true)} title="Reload all images">
               Reload Images
             </Button>
           </div>
@@ -389,15 +192,15 @@ export default class App extends React.Component<{}, AppState> {
               updateFile={(file) => {
                 this.setState({ guiFile: file }, () => {
                   localStorage.setItem('guiFile', file);
-                  this.loadGff();
+                  this.load();
                 });
               }}
               style={{ flex: 1 }}
             />
-            <Button onClick={this.loadGff} title="Revert all unsaved changes">
+            <Button onClick={() => this.load()} title="Revert all unsaved changes">
               Revert
             </Button>
-            <Button onClick={this.saveGff} title="Save .gui file">
+            <Button onClick={() => saveGff(this.state.guiFile!, toolsPath, this.state.data, this.handleError)} title="Save .gui file">
               Save
             </Button>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { getLabel } from '../../util/DataUtil';
 import TreeNode from './TreeNode';
 
 interface TreeProps {
@@ -14,15 +15,7 @@ export default class Tree extends React.Component<TreeProps> {
   }
 
   private makeNode(data: any, isChild?: boolean): JSX.Element {
-    let label: string = '';
-    if (data.exostring) {
-      if (data.exostring.label === 'TAG') label = data.exostring.$t;
-      else if (Array.isArray(data.exostring)) {
-        data.exostring.forEach((e: any) => {
-          if (e.label === 'TAG') label = e.$t;
-        });
-      }
-    }
+    const label = getLabel(data);
 
     const children: JSX.Element[] = [];
     if (data.list && data.list.struct) {
