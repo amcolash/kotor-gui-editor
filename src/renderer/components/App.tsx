@@ -30,6 +30,7 @@ interface AppState {
   tgaPath?: string;
   guiFile?: string;
   data: any;
+  undoStack: any[];
   selected?: any;
   extracting?: string;
 }
@@ -51,6 +52,7 @@ console.log('using tool path', toolsPath);
 export default class App extends React.Component<{}, AppState> {
   state: AppState = {
     data: '',
+    undoStack: [],
     tgaPath: localStorage.getItem('tgaPath') || undefined,
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
@@ -63,11 +65,16 @@ export default class App extends React.Component<{}, AppState> {
 
     bind(['ctrl+shift+i', 'command+option+i'], () => remote.getCurrentWindow().webContents.toggleDevTools());
     bind('mod+r', () => remote.getCurrentWindow().reload());
+    bind('mod+z', () => this.undo());
   }
 
   private handleError(e: any) {
     console.error(e);
     remote.dialog.showMessageBoxSync({ message: JSON.stringify(e), type: 'error', buttons: ['Ok'] });
+  }
+
+  private clone(d: any) {
+    return JSON.parse(JSON.stringify(d));
   }
 
   private commandInPath = async (command: string): Promise<boolean> => {
@@ -208,7 +215,7 @@ export default class App extends React.Component<{}, AppState> {
 
       // Keep this block outside of the try/catch so that it is handled properly elsewhere
       if (data) {
-        this.setState({ data, selected: undefined }, () => {
+        this.setState({ data: this.clone(data), undoStack: [this.clone(data)], selected: undefined }, () => {
           console.log('data', this.state.data);
           this.extractPng();
         });
@@ -240,10 +247,19 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   private updateData = (data: any, cb?: () => void) => {
-    this.setState({ data }, () => {
+    this.setState({ data, undoStack: [...this.state.undoStack, this.clone(this.state.data)] }, () => {
       if (cb) cb();
     });
   };
+
+  private undo() {
+    if (this.state.undoStack.length > 1) {
+      this.setState({
+        data: this.clone(this.state.undoStack[this.state.undoStack.length - 2]),
+        undoStack: this.state.undoStack.slice(0, this.state.undoStack.length - 1),
+      });
+    }
+  }
 
   public render() {
     if (this.state.extracting) {
@@ -321,7 +337,7 @@ export default class App extends React.Component<{}, AppState> {
             updateSelected={(selected: any) => this.setState({ selected })}
             updateData={this.updateData}
           />
-          <PropertyList selected={this.state.selected} updateData={this.updateData} data={this.state.data} />
+          <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} />
         </div>
       </div>
     );

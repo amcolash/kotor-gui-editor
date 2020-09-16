@@ -21,14 +21,19 @@
 - [x] Name for App (maybe KGE - kotor gui editor)
 - [x] No need to download xoreos-tools manually
   - [x] Linux
-  - [ ] MacOS - No to catalina, maybe lesser versions w/o binary signing
+  - [-] MacOS - No because of signing issues, instead provide instructions on manually building `xoreos-tools`
   - [ ] Windows
-- [ ] Undo stack
+- [x] Undo stack
+  - [ ] Group changes together so that typing into inputs is a single final event. Most likely do diffs to see what was modified and keep updating the old undo stack item
+- [ ] Redo stack
 - [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
-- [ ] Collapse Settings UI
+  - [ ] Dark / Light mode
+  - [ ] Remove sidebar border when nothing open
+  - [ ] Collapse Settings UI button? Putting them on the same line helped give back real estate already
 - [ ] Write typedefs (at least partially)
 - [ ] Docs on usage
+  - [ ] Specific section on getting MacOs working (need to manually build/install `xoreos-tools` for at least Catalina)
 
 ## Post-V1
 
