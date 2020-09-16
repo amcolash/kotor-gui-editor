@@ -24,7 +24,8 @@
   - [-] MacOS - No because of signing issues, instead provide instructions on manually building `xoreos-tools`
   - [ ] Windows
 - [x] Undo stack
-  - [ ] Group changes together so that typing into inputs is a single final event. Most likely do diffs to see what was modified and keep updating the old undo stack item
+  - [x] Group changes together so that typing into inputs is a single final event. Most likely do diffs to see what was modified and keep updating the old undo stack item
+  - [ ] Fix undo/redo and selection
 - [x] Redo stack
 - [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
@@ -37,6 +38,7 @@
 
 ## Post-V1
 
+- [ ] clone/add/delete for nodes/properties?
 - [ ] Math in numeric input boxes?
 - [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
 - [ ] Automated tests? Maybe, but probably not...

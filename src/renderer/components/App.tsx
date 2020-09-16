@@ -1,10 +1,12 @@
 import { exec } from 'child_process';
 import * as commandExists from 'command-exists';
+import { detailedDiff } from 'deep-object-diff';
 import { remote } from 'electron';
 import * as escape from 'escape-path-with-spaces';
 import { exists, existsSync, readFile, writeFile } from 'fs';
 import { emptyDir, mkdirp } from 'fs-extra';
-import { bind } from 'mousetrap';
+import { bind, bindGlobal } from 'mousetrap';
+import 'mousetrap-global-bind';
 import { platform } from 'os';
 import { basename, join, resolve } from 'path';
 import React from 'react';
@@ -27,11 +29,12 @@ cssRule('body', {
 });
 
 interface AppState {
-  tgaPath?: string;
-  guiFile?: string;
   data: any;
   history: any[];
   historyIndex: number;
+  lastUpdated: string;
+  tgaPath?: string;
+  guiFile?: string;
   selected?: any;
   extracting?: string;
 }
@@ -55,6 +58,7 @@ export default class App extends React.Component<{}, AppState> {
     data: '',
     history: [],
     historyIndex: 1,
+    lastUpdated: '',
     tgaPath: localStorage.getItem('tgaPath') || undefined,
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
@@ -67,8 +71,16 @@ export default class App extends React.Component<{}, AppState> {
 
     bind(['ctrl+shift+i', 'command+option+i'], () => remote.getCurrentWindow().webContents.toggleDevTools());
     bind(['mod+r', 'shift+mod+r'], () => remote.getCurrentWindow().reload());
-    bind('mod+z', () => this.undo());
-    bind(['mod+y', 'shift+mod+z'], () => this.redo());
+
+    // Override undo/redo in text boxes
+    bindGlobal('mod+z', () => {
+      this.undo();
+      return false;
+    });
+    bindGlobal(['mod+y', 'shift+mod+z'], () => {
+      this.redo();
+      return false;
+    });
   }
 
   private handleError(e: any) {
@@ -218,10 +230,13 @@ export default class App extends React.Component<{}, AppState> {
 
       // Keep this block outside of the try/catch so that it is handled properly elsewhere
       if (data) {
-        this.setState({ data: this.clone(data), history: [this.clone(data)], historyIndex: 1, selected: undefined }, () => {
-          console.log('data', this.state.data);
-          this.extractPng();
-        });
+        this.setState(
+          { data: this.clone(data), history: [this.clone(data)], historyIndex: 1, lastUpdated: '', selected: undefined },
+          () => {
+            console.log('data', this.state.data);
+            this.extractPng();
+          }
+        );
       }
     }
   };
@@ -249,8 +264,47 @@ export default class App extends React.Component<{}, AppState> {
     }
   };
 
+  // Generate a path string (only works if there is a singular item at the bottom of the tree)
+  private getPath(diff: any): string {
+    if (typeof diff !== 'object') return diff;
+
+    const keys = Object.keys(diff);
+    if (keys.length === 0) {
+      return '';
+    } else if (keys.length === 1) {
+      if (typeof diff[keys[0]] !== 'object') {
+        return keys[0];
+      }
+
+      return keys[0] + '.' + this.getPath(diff[keys[0]]);
+    }
+
+    throw 'Multiple changes';
+  }
+
   private updateData = (data: any, cb?: () => void) => {
     let history = [...this.state.history, this.clone(this.state.data)];
+
+    // Determine if we need to update the last history item or make a new entry (so things like rename won't blow up history stack)
+    const diff: any = detailedDiff(this.state.history[this.state.history.length - 1], data);
+    const wasAdded = Object.keys(diff.added).length > 0;
+    const wasDeleted = Object.keys(diff.deleted).length > 0;
+    const wasUpdated = Object.keys(diff.updated).length > 0;
+
+    let lastUpdated = '';
+    // Check only if something was updated
+    if (wasUpdated && !wasAdded && !wasDeleted) {
+      try {
+        lastUpdated = this.getPath(diff.updated);
+
+        // Rewrite the last history entry w/ new data
+        if (this.state.lastUpdated === lastUpdated) {
+          history = [...this.state.history.slice(0, this.state.history.length - 1), this.clone(this.state.data)];
+        }
+      } catch (e) {
+        // Multiple things were changed, don't do anything special
+      }
+    }
 
     // Slice out history that will not be able to be re-done
     if (this.state.historyIndex > 1) {
@@ -261,12 +315,14 @@ export default class App extends React.Component<{}, AppState> {
     const maxUndoSize = 50;
     if (history.length > maxUndoSize - 1) history = history.slice(history.length - maxUndoSize);
 
-    this.setState({ data, history, historyIndex: 1 }, () => {
+    this.setState({ data, history, historyIndex: 1, lastUpdated }, () => {
       if (cb) cb();
     });
   };
 
   private undo() {
+    console.log('undo');
+
     const historyIndex = this.state.historyIndex + 1;
     if (this.state.history.length >= historyIndex) {
       this.setState({
@@ -307,7 +363,7 @@ export default class App extends React.Component<{}, AppState> {
         }}
       >
         <div style={{ display: 'flex' }}>
-          History: {this.state.history.length}, Index:{this.state.historyIndex}
+          History: {this.state.history.length}, Index:{this.state.historyIndex}, Last Updated: {this.state.lastUpdated}
           <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
             <FilePicker
               label="TGA Path"
