@@ -9,6 +9,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          lfs: true
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '12'
