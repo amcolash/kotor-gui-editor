@@ -1,5 +1,5 @@
 import React, { createRef } from 'react';
-import { getLabel } from '../../util/DataUtil';
+import { getLabel } from '../util/DataUtil';
 import PreviewNode from './PreviewNode';
 
 interface PreviewProps {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { getLabel } from '../../util/DataUtil';
+import { getLabel } from '../util/DataUtil';
 import TreeNode from './TreeNode';
 
 interface TreeProps {

@@ -23,6 +23,7 @@ This changelog keeps track of most (except early development) changes to the too
 
 - Escape all file paths to try and make things better cross platform
 - Error messages shown to user instead of silently failing
+- CI builds were not set explicitly to use lfs (though unix seemed ok...)
 
 ## 0.0.2: 09-13-2020
 

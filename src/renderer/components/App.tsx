@@ -2,14 +2,22 @@ import { detailedDiff } from 'deep-object-diff';
 import { remote } from 'electron';
 import { bind, bindGlobal } from 'mousetrap';
 import 'mousetrap-global-bind';
-import { platform } from 'os';
 import { join, resolve } from 'path';
 import React from 'react';
 import { Moon, Sun, Terminal } from 'react-feather';
 import { cssRule } from 'typestyle';
-import { darkBackground, darkBackgroundInput, darkColor, darkOutlineInput, lightBackground, lightColor } from '../../util/Colors';
-import { clone, findModifiedNode, getPath } from '../../util/DataUtil';
-import { extractPng, loadGff, saveGff } from '../../util/XoreosTools';
+import {
+  darkBackground,
+  darkBackgroundInput,
+  darkColor,
+  darkOutlineInput,
+  isDevelopment,
+  lightBackground,
+  lightColor,
+  os,
+} from '../util/Consts';
+import { clone, findModifiedNode, getPath } from '../util/DataUtil';
+import { extractPng, loadGff, saveGff } from '../util/XoreosTools';
 import Button from './Button';
 import FilePicker from './FilePicker';
 import Preview from './Preview';
@@ -61,11 +69,9 @@ export interface AppState {
   extracting?: string;
 }
 
-export const isDevelopment = process.env.NODE_ENV !== 'production';
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
-const os = platform().replace('win32', 'win').replace('darwin', 'mac');
 const root = resolve(remote.app.getAppPath(), '../../'); // Both in prod and in dev, this seems to be the right path (maybe not on mac)
-const toolsPath = join(root, `xoreos-tools/xoreos-tools-0.0.6-${os}64/`);
+export const toolsPath = join(root, `xoreos-tools/xoreos-tools-0.0.6-${os}64/`);
 
 console.log('using tool path', toolsPath);
 
@@ -86,7 +92,7 @@ export default class App extends React.Component<{}, AppState> {
 
     window.onerror = this.handleError;
 
-    bind(['ctrl+shift+i', 'command+option+i'], () => remote.getCurrentWindow().webContents.toggleDevTools());
+    bind(['ctrl+shift+i', 'command+option+i', 'f12'], () => remote.getCurrentWindow().webContents.toggleDevTools());
     bind(['mod+r', 'shift+mod+r'], () => remote.getCurrentWindow().reload());
 
     // Override undo/redo in text boxes

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CornerDownRight } from 'react-feather';
 import { cssRule } from 'typestyle';
-import { darkSelection, lightSelection } from '../../util/Colors';
+import { darkSelection, lightSelection } from '../util/Consts';
 
 cssRule('.treeItem', {
   padding: 2,

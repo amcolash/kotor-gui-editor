@@ -36,6 +36,7 @@
 
 ## Post-V1
 
+- [ ] Better higher dpi scaling, make the gui smaller based on zoom > 1
 - [ ] Render borders
 - [ ] Consider prettier inputs/buttons
 - [ ] Write typedefs (at least partially)

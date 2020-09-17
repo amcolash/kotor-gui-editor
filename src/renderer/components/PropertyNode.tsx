@@ -1,7 +1,7 @@
 import React from 'react';
 import * as tinycolor from 'tinycolor2';
 import { style } from 'typestyle';
-import { lightColor } from '../../util/Colors';
+import { lightColor } from '../util/Consts';
 
 const structName = style({
   marginLeft: 14,

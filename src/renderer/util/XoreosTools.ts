@@ -3,7 +3,7 @@ import { platform } from 'os';
 import { basename, join, resolve } from 'path';
 import * as tga2png from 'tga2png';
 import { toJson, toXml } from 'xml2json';
-import { AppState, tmpDir } from '../renderer/components/App';
+import { AppState, tmpDir } from '../components/App';
 import { copyFileAsync, emptyDirAsync, execAsync, existsAsync, mkdirpAsync, readFileAsync, writeFileAsync } from './Async';
 import { clone, commandInPath } from './DataUtil';
 

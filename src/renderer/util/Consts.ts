@@ -1,3 +1,8 @@
+import { platform } from 'os';
+
+export const isDevelopment = process.env.NODE_ENV !== 'production';
+export const os = platform().replace('win32', 'win').replace('darwin', 'mac');
+
 export const lightBackground = '#eee';
 export const darkBackground = '#ccc';
 

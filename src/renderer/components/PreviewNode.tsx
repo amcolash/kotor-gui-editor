@@ -2,11 +2,11 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import React, { CSSProperties, Fragment } from 'react';
 import { style } from 'typestyle';
-import { lightSelection, previewDarkSelection } from '../../util/Colors';
+import { lightSelection, os, previewDarkSelection } from '../util/Consts';
 import { tmpDir } from './App';
 import { PreviewData } from './Preview';
 
-const handleSize = 20;
+const handleSize = os === 'win' ? 10 : 20;
 const handleClass = style({
   minWidth: handleSize,
   minHeight: handleSize,
@@ -31,7 +31,9 @@ const verticalClass = style({
   },
 });
 
-const selectionWidth = 4;
+// Apparently there is some weird dpi stuff w/ windows
+const outlineWidth = os === 'win' ? 3 : 6;
+const selectionWidth = os === 'win' ? 2 : 4;
 
 interface PreviewNodeProps {
   data: any;
@@ -60,7 +62,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
           style.position = 'absolute';
 
           if (selected === data) {
-            style.outline = `6px solid ${this.props.darkMode ? previewDarkSelection : lightSelection}`;
+            style.outline = `${outlineWidth}px solid ${this.props.darkMode ? previewDarkSelection : lightSelection}`;
             style.outlineOffset = -6;
             style.zIndex = 1;
           } else {
