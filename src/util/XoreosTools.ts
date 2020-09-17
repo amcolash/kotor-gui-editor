@@ -84,8 +84,7 @@ export async function extractPng(
             const resolvedTool = inPath ? command : resolve(toolsPath, command);
             const extractedTga = join(tgaTmpDir, items[i] + '.tga');
 
-            const args = [escape(tpcPath), escape(extractedTga)];
-            const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+            const { stdout, stderr } = await execAsync(`"${resolvedTool}" "${tpcPath}" "${extractedTga}"`);
 
             if (stdout) console.log(stdout);
             if (stderr) {
@@ -122,8 +121,7 @@ export async function loadGff(
       const resolvedGui = resolve(guiFile!);
       const resolvedXml = resolve(tmpDir, basename(guiFile! + '-loaded.xml'));
 
-      const args = ['--kotor', escape(resolvedGui), escape(resolvedXml)];
-      const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+      const { stdout, stderr } = await execAsync(`"${resolvedTool}" --kotor "${resolvedGui}" "${resolvedXml}"`);
 
       if (stdout) console.log(stdout);
       if (stderr) {
@@ -167,8 +165,7 @@ export async function saveGff(guiFile: string, toolsPath: string, data: any, han
       const xml = toXml(data);
       await writeFileAsync(resolvedXml, xml);
 
-      const args = ['--kotor', escape(resolvedXml), escape(resolvedGui)];
-      const { stdout, stderr } = await execAsync(`${resolvedTool} ${args.join(' ')}`);
+      const { stdout, stderr } = await execAsync(`${resolvedTool} --kotor "${resolvedXml}" "${resolvedGui}"`);
 
       if (stdout) console.log(stdout);
       if (stderr) throw stderr;
