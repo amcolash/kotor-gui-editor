@@ -7,10 +7,9 @@
 - [x] Better drag icons
 - [x] Github/Travis CI builds
 - [x] Add a changelog
-- [ ] Render other types of things?
+- [x] Render other types of things?
   - [x] Protoitems
   - [x] Scrollbars
-  - [ ] Borders
 - [x] Partial extraction based on the assets needed in GUI file
 - [x] Extract .tpc files?
 - [x] Refactor tree items to components
@@ -27,9 +26,8 @@
   - [x] Group changes together so that typing into inputs is a single final event. Most likely do diffs to see what was modified and keep updating the old undo stack item
   - [x] Fix undo/redo and selection
 - [x] Redo stack
-- [ ] Icon for App (place it at `build/icon.png`, 512x512)
-- [ ] Clean up UI
-  - [ ] Consider prettier inputs/buttons
+- [x] Icon for App (place it at `build/icon.png`, 512x512)
+- [x] Clean up UI
   - [x] Dark / Light mode
   - [x] Remove sidebar border when nothing open
   - [-] Collapse Settings UI button? Putting them on the same line helped give back real estate already
@@ -38,6 +36,8 @@
 
 ## Post-V1
 
+- [ ] Render borders
+- [ ] Consider prettier inputs/buttons
 - [ ] Write typedefs (at least partially)
 - [ ] clone/add/delete for nodes/properties?
 - [ ] Math in numeric input boxes?

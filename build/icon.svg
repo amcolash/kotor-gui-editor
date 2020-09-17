@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46667"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="/home/amcolash/Github/kotor-gui-editor/build/icon.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2">
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask848">
+      <rect
+         y="161.53331"
+         x="0"
+         height="135.46666"
+         width="135.46666"
+         id="rect850"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.39919147" />
+    </mask>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="212.77069"
+     inkscape:cy="186.29687"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1863"
+     inkscape:window-height="1027"
+     inkscape:window-x="57"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-161.53331)">
+    <rect
+       style="fill:#404040;fill-opacity:1;stroke:#a3ffae;stroke-width:3.60771537;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect852"
+       width="121.78012"
+       height="116.50062"
+       x="5.2091446"
+       y="169.47879"
+       rx="12.212673" />
+    <path
+       style="fill:none;stroke:#a3ffae;stroke-width:3.60771537;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 66.492072,245.56407 H 126.0563"
+       id="path865"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#a3ffae;stroke-width:3.60771537;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 67.658528,169.47882 V 285.979"
+       id="path856"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#66d272;fill-opacity:1;stroke:#66d272;stroke-width:3.38764215;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect861"
+       width="6.9201164"
+       height="6.9201164"
+       x="93.822952"
+       y="242.10402" />
+    <rect
+       y="262.17422"
+       x="64.198471"
+       height="6.9201164"
+       width="6.9201164"
+       id="rect867"
+       style="fill:#66d272;fill-opacity:1;stroke:#66d272;stroke-width:3.38764215;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <rect
+       style="fill:#66d272;fill-opacity:1;stroke:#66d272;stroke-width:3.38764215;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect871"
+       width="6.9201164"
+       height="6.9201164"
+       x="123.44744"
+       y="262.17422" />
+    <rect
+       y="282.24442"
+       x="93.822952"
+       height="6.9201164"
+       width="6.9201164"
+       id="rect873"
+       style="fill:#66d272;fill-opacity:1;stroke:#66d272;stroke-width:3.38764215;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:11.40726376px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#a3ffae;fill-opacity:1;stroke:none;stroke-width:0.28518161"
+       x="17.723427"
+       y="245.62814"
+       id="text877"
+       transform="scale(1.1767233,0.84981746)"><tspan
+         sodipodi:role="line"
+         id="tspan875"
+         x="17.723427"
+         y="245.62814"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:54.75487137px;font-family:Uroob;-inkscape-font-specification:Uroob;writing-mode:lr-tb;fill:#a3ffae;fill-opacity:1;stroke-width:0.28518161">K</tspan><tspan
+         sodipodi:role="line"
+         x="17.723427"
+         y="314.07175"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:54.75487137px;font-family:Uroob;-inkscape-font-specification:Uroob;writing-mode:lr-tb;fill:#a3ffae;fill-opacity:1;stroke-width:0.28518161"
+         id="tspan879"
+         dy="-28.924292">G</tspan><tspan
+         sodipodi:role="line"
+         x="17.723427"
+         y="382.51532"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:54.75487137px;font-family:Uroob;-inkscape-font-specification:Uroob;writing-mode:lr-tb;fill:#a3ffae;fill-opacity:1;stroke-width:0.28518161"
+         id="tspan881"
+         dy="-57.848583">E</tspan></text>
+  </g>
+</svg>
