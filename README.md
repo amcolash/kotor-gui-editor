@@ -23,14 +23,19 @@ In order to load in game images, you will need to extract them using [KotOR Tool
 What I would recommed doing is:
 
 1. Extract the original ui assets into a folder
-2. Download HD assets (if desired) and add those files to the same folder, reaplcing if needed
+2. Download HD assets (if desired) and add those files to the same folder, replacing if needed. I would recommend [these](https://deadlystream.com/files/file/1457-hd-menus-and-ui-assets/) form JackInTheBox
 3. Open up your asset folder and promit!
 
-Finally, once you are all set with the images you just need to open any `.gui` file. These are also easily extractable from the game `BIF's > gui.bif` and similary, extract all files to a new directory. An alternative would be to open existing `.gui` mods (such as a widescreen mod) and modify from there.
+Finally, once you are all set with the images you just need to open any `.gui` file. There are two routes here:
+
+1. These are also easily extractable from the game `BIF's > gui.bif` and similary, extract all files to a new directory.
+2. Open existing `.gui` files from a widescreen mod - such as [this](https://deadlystream.com/files/file/1159-kotor-high-resolution-menus/) from ndix UR, and modify from there.
 
 <img src="https://raw.githubusercontent.com/amcolash/kotor-gui-editor/master/screenshots/bif.png" height="200"/>
 
 From here, it is mostly drag + drop or modifying values in the input boxes in the sidebar.
+
+Once you are ready to save, there is a save button. It will make a backup of the original `.gui` file (for now)
 
 ## Mac OS Specific
 
