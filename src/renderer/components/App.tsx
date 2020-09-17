@@ -8,7 +8,7 @@ import { join, resolve } from 'path';
 import React from 'react';
 import { Terminal } from 'react-feather';
 import { cssRule } from 'typestyle';
-import { clone, getPath } from '../../util/DataUtil';
+import { clone, findModifiedNode, getPath } from '../../util/DataUtil';
 import { extractPng, loadGff, saveGff } from '../../util/XoreosTools';
 import Button from './Button';
 import FilePicker from './FilePicker';
@@ -34,6 +34,7 @@ export interface AppState {
   extracting?: string;
 }
 
+export const isDevelopment = process.env.NODE_ENV !== 'production';
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
 const os = platform().replace('-32', '').replace('darwin', 'mac');
 const root = resolve(remote.app.getAppPath(), '../../'); // Both in prod and in dev, this seems to be the right path (maybe not on mac)
@@ -102,15 +103,16 @@ export default class App extends React.Component<{}, AppState> {
     let history = [...this.state.history, clone(this.state.data)];
 
     // Determine if we need to update the last history item or make a new entry (so things like rename won't blow up history stack)
-    const diff: any = detailedDiff(this.state.history[this.state.history.length - 1], data);
+    const diff: any = detailedDiff(this.state.history[this.state.history.length - this.state.historyIndex], data);
     const wasAdded = Object.keys(diff.added).length > 0;
     const wasDeleted = Object.keys(diff.deleted).length > 0;
     const wasUpdated = Object.keys(diff.updated).length > 0;
 
     let lastUpdated = '';
-    // Check only if something was updated
+    // Check only if something was updated, not 100% perfect but decent most of the time
     if (wasUpdated && !wasAdded && !wasDeleted) {
       try {
+        // console.log(diff.updated);
         lastUpdated = getPath(diff.updated);
 
         // Rewrite the last history entry w/ new data
@@ -142,7 +144,10 @@ export default class App extends React.Component<{}, AppState> {
     if (historyIndex > 0 && this.state.history.length >= historyIndex) {
       const data = clone(this.state.history[this.state.history.length - historyIndex]);
 
-      this.setState({ data, historyIndex });
+      // Try to select the new matching (and previously selected) item from the cloned history data tree
+      const selected = findModifiedNode(this.state.data, data);
+
+      this.setState({ data, historyIndex, selected });
     }
   }
 
@@ -209,7 +214,7 @@ export default class App extends React.Component<{}, AppState> {
               style={{ marginLeft: 10, background: '#333' }}
               title="Debugging Tools"
             >
-              <Terminal size="16" style={{ marginBottom: -3, color: '#eee' }} />
+              <Terminal size="15" style={{ marginBottom: -3, color: '#eee' }} />
             </Button>
           </div>
         </div>
@@ -224,6 +229,12 @@ export default class App extends React.Component<{}, AppState> {
           />
           <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} />
         </div>
+        {isDevelopment && (
+          <div>
+            History Size: {this.state.history.length}, History Index; {this.state.historyIndex}, Last Modified Node:{' '}
+            {this.state.lastUpdated}
+          </div>
+        )}
       </div>
     );
   }
