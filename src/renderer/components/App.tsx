@@ -64,7 +64,7 @@ export interface AppState {
 
 export const isDevelopment = process.env.NODE_ENV !== 'production';
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
-const os = platform().replace('-32', '').replace('darwin', 'mac');
+const os = platform().replace('win32', 'win').replace('darwin', 'mac');
 const root = resolve(remote.app.getAppPath(), '../../'); // Both in prod and in dev, this seems to be the right path (maybe not on mac)
 const toolsPath = escape(join(root, `xoreos-tools/xoreos-tools-0.0.6-${os}64/`));
 
