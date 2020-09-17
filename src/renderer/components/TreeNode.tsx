@@ -1,14 +1,12 @@
 import React from 'react';
 import { CornerDownRight } from 'react-feather';
 import { cssRule } from 'typestyle';
+import { darkSelection, lightSelection } from '../../util/Colors';
 
 cssRule('.treeItem', {
   padding: 2,
   cursor: 'pointer',
   $nest: {
-    '&.selected': {
-      backgroundColor: 'lime',
-    },
     '&:hover': {
       outline: '1px solid #ccc',
     },
@@ -21,6 +19,7 @@ interface TreeNodeProps {
   selected: boolean;
   isChild: boolean;
   updateSelected: (data: any) => void;
+  darkMode: boolean;
 }
 
 export default class TreeNode extends React.Component<TreeNodeProps> {
@@ -50,11 +49,13 @@ export default class TreeNode extends React.Component<TreeNodeProps> {
             this.props.updateSelected(this.props.data);
             e.stopPropagation();
           }}
+          onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') this.focusItem(1);
             if (e.key === 'ArrowUp') this.focusItem(-1);
           }}
           tabIndex={0}
+          style={{ background: this.props.selected ? (this.props.darkMode ? darkSelection : lightSelection) : undefined }}
         >
           {this.props.isChild && <CornerDownRight size="12" style={{ marginRight: 4 }} />}
           {this.props.label}

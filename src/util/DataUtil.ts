@@ -1,6 +1,5 @@
 import commandExists from 'command-exists';
 import { detailedDiff } from 'deep-object-diff';
-import * as hash from 'object-hash';
 import { get } from 'object-path';
 
 export function clone(d: any) {
@@ -44,20 +43,20 @@ export function findModifiedNode(data: any, newData: any): any | null {
   return null;
 }
 
-export function findFromHash(data: any, objHash: string): any | null {
-  if (objHash === hash(data)) return data;
+// export function findFromHash(data: any, objHash: string): any | null {
+//   if (objHash === hash(data)) return data;
 
-  if (data.list && data.list.struct) {
-    let found;
-    data.list.struct.forEach((e: any) => {
-      const wasFound = findFromHash(e, objHash);
-      if (wasFound) found = wasFound;
-    });
-    if (found) return found;
-  }
+//   if (data.list && data.list.struct) {
+//     let found;
+//     data.list.struct.forEach((e: any) => {
+//       const wasFound = findFromHash(e, objHash);
+//       if (wasFound) found = wasFound;
+//     });
+//     if (found) return found;
+//   }
 
-  return null;
-}
+//   return null;
+// }
 
 export function getLabel(data: any): string {
   let label: string = '';

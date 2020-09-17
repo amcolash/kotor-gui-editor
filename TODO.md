@@ -29,15 +29,16 @@
 - [x] Redo stack
 - [ ] Icon for App (place it at `build/icon.png`, 512x512)
 - [ ] Clean up UI
-  - [ ] Dark / Light mode
-  - [ ] Remove sidebar border when nothing open
-  - [ ] Collapse Settings UI button? Putting them on the same line helped give back real estate already
-- [ ] Write typedefs (at least partially)
+  - [ ] Consider prettier inputs/buttons
+  - [x] Dark / Light mode
+  - [x] Remove sidebar border when nothing open
+  - [-] Collapse Settings UI button? Putting them on the same line helped give back real estate already
 - [ ] Docs on usage
   - [ ] Specific section on getting MacOs working (need to manually build/install `xoreos-tools` for at least Catalina)
 
 ## Post-V1
 
+- [ ] Write typedefs (at least partially)
 - [ ] clone/add/delete for nodes/properties?
 - [ ] Math in numeric input boxes?
 - [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(

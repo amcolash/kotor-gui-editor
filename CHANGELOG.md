@@ -6,15 +6,17 @@ This changelog keeps track of most (except early development) changes to the too
 
 ### Added
 
-- Undo/Redo stack
+- Undo/Redo stack, working about 90% - there are some quirks but good enough to release
 - Portable build for windows
 - Attempt to use local version of `xoreos-tools` if they are in `PATH`
 - Error messages shown to user instead of silently failing
+- Dark Mode - Cuz I'm Batman!
 
 ### Updated
 
 - No longer need to reference `xoreos-tools` directory, tools are bundled in
 - Remove default electron menu, keep dev tools shortcut + add a nice debug icon (just in case we need logs)
+- Clean up the UI a bit
 
 ### Fixed
 

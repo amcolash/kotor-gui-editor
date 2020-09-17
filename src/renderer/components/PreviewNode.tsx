@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import React, { CSSProperties, Fragment } from 'react';
 import { style } from 'typestyle';
+import { lightSelection, previewDarkSelection } from '../../util/Colors';
 import { tmpDir } from './App';
 import { PreviewData } from './Preview';
 
@@ -12,7 +13,6 @@ const handleClass = style({
   maxWidth: handleSize,
   maxHeight: handleSize,
   position: 'absolute',
-  background: 'lime',
 });
 
 const horizontalClass = style({
@@ -42,6 +42,7 @@ interface PreviewNodeProps {
   pseudoChildren: JSX.Element[];
   previewData: PreviewData;
   zoom: number;
+  darkMode: boolean;
 }
 
 export default class PreviewNode extends React.Component<PreviewNodeProps> {
@@ -59,7 +60,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
           style.position = 'absolute';
 
           if (selected === data) {
-            style.outline = '6px solid lime';
+            style.outline = `6px solid ${this.props.darkMode ? previewDarkSelection : lightSelection}`;
             style.outlineOffset = -6;
             style.zIndex = 1;
           } else {
@@ -131,7 +132,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
           const generatePreview = () => {
             ctx.beginPath();
             ctx.lineWidth = selectionWidth;
-            ctx.strokeStyle = 'lime';
+            ctx.strokeStyle = this.props.darkMode ? previewDarkSelection : lightSelection;
             ctx.rect(0, 0, w, h);
             ctx.stroke();
             ctx.closePath();
@@ -255,28 +256,44 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
               <div
                 draggable
                 className={`left ${handleClass} ${horizontalClass}`}
-                style={{ left: -handleSize / 2 + selectionWidth / 2, top: height / 2 - handleSize / 2 }}
+                style={{
+                  left: -handleSize / 2 + selectionWidth / 2,
+                  top: height / 2 - handleSize / 2,
+                  background: this.props.darkMode ? previewDarkSelection : lightSelection,
+                }}
                 onDragStart={dragStartHandle}
                 onDragEnd={dragEndHandle}
               />
               <div
                 draggable
                 className={`right ${handleClass} ${horizontalClass}`}
-                style={{ right: -handleSize / 2 + selectionWidth / 2, top: height / 2 - handleSize / 2 }}
+                style={{
+                  right: -handleSize / 2 + selectionWidth / 2,
+                  top: height / 2 - handleSize / 2,
+                  background: this.props.darkMode ? previewDarkSelection : lightSelection,
+                }}
                 onDragStart={dragStartHandle}
                 onDragEnd={dragEndHandle}
               />
               <div
                 draggable
                 className={`top ${handleClass} ${verticalClass}`}
-                style={{ left: width / 2 - handleSize / 2, top: -handleSize / 2 + selectionWidth / 2 }}
+                style={{
+                  left: width / 2 - handleSize / 2,
+                  top: -handleSize / 2 + selectionWidth / 2,
+                  background: this.props.darkMode ? previewDarkSelection : lightSelection,
+                }}
                 onDragStart={dragStartHandle}
                 onDragEnd={dragEndHandle}
               />
               <div
                 draggable
                 className={`bottom ${handleClass} ${verticalClass}`}
-                style={{ left: width / 2 - handleSize / 2, bottom: -handleSize / 2 + selectionWidth / 2 }}
+                style={{
+                  left: width / 2 - handleSize / 2,
+                  bottom: -handleSize / 2 + selectionWidth / 2,
+                  background: this.props.darkMode ? previewDarkSelection : lightSelection,
+                }}
                 onDragStart={dragStartHandle}
                 onDragEnd={dragEndHandle}
               />

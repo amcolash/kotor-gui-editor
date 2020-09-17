@@ -6,8 +6,9 @@ import 'mousetrap-global-bind';
 import { platform } from 'os';
 import { join, resolve } from 'path';
 import React from 'react';
-import { Terminal } from 'react-feather';
+import { Moon, Sun, Terminal } from 'react-feather';
 import { cssRule } from 'typestyle';
+import { darkBackground, darkBackgroundInput, darkColor, darkOutlineInput, lightBackground, lightColor } from '../../util/Colors';
 import { clone, findModifiedNode, getPath } from '../../util/DataUtil';
 import { extractPng, loadGff, saveGff } from '../../util/XoreosTools';
 import Button from './Button';
@@ -19,8 +20,34 @@ import Tree from './Tree';
 cssRule('body', {
   margin: 0,
   overflow: 'hidden',
-  background: 'white',
   fontFamily: 'sans-serif',
+});
+
+// cssRule('input', {
+//   backgroundColor: lightBackgroundInput,
+// });
+
+cssRule('.darkMode input', {
+  backgroundColor: darkBackgroundInput,
+  border: `1px solid ${darkOutlineInput}`,
+});
+
+cssRule('::-webkit-scrollbar', {
+  backgroundColor: '#e0e0e0',
+  margin: 4,
+});
+
+cssRule('::-webkit-scrollbar-thumb', {
+  backgroundColor: '#ccc',
+});
+
+cssRule('.darkMode ::-webkit-scrollbar', {
+  backgroundColor: '#ccc',
+  border: '1px solid #aaa',
+});
+
+cssRule('.darkMode ::-webkit-scrollbar-thumb', {
+  backgroundColor: '#e7e7e7',
 });
 
 export interface AppState {
@@ -28,6 +55,7 @@ export interface AppState {
   history: any[];
   historyIndex: number;
   lastUpdated: string;
+  darkMode: boolean;
   tgaPath?: string;
   guiFile?: string;
   selected?: any;
@@ -48,6 +76,7 @@ export default class App extends React.Component<{}, AppState> {
     history: [],
     historyIndex: 1,
     lastUpdated: '',
+    darkMode: localStorage.getItem('darkMode') === 'true' || false,
     tgaPath: localStorage.getItem('tgaPath') || undefined,
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
@@ -152,9 +181,23 @@ export default class App extends React.Component<{}, AppState> {
   }
 
   public render() {
+    const background = this.state.darkMode ? darkBackground : lightBackground;
+    const color = this.state.darkMode ? darkColor : lightColor;
+
     if (this.state.extracting) {
       return (
-        <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          style={{
+            color,
+            background,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            filter: this.state.darkMode ? 'invert(1)' : undefined,
+          }}
+        >
           <h2>Extracting PNGs from TGAs, please wait... {this.state.extracting}</h2>
         </div>
       );
@@ -162,13 +205,16 @@ export default class App extends React.Component<{}, AppState> {
 
     return (
       <div
-        className="mainContainer"
+        className={'mainContainer' + (this.state.darkMode ? ' darkMode' : '')}
         style={{
+          color,
+          background,
           padding: 5,
           width: 'calc(100vw - 10px)',
           height: 'calc(100vh - 10px)',
           display: 'flex',
           flexDirection: 'column',
+          filter: this.state.darkMode ? 'invert(1)' : undefined,
         }}
       >
         <div style={{ display: 'flex' }}>
@@ -184,6 +230,7 @@ export default class App extends React.Component<{}, AppState> {
                 });
               }}
               style={{ flex: 1 }}
+              darkMode={this.state.darkMode}
             />
             <Button onClick={() => this.extract(true)} title="Reload all images">
               Reload Images
@@ -201,6 +248,7 @@ export default class App extends React.Component<{}, AppState> {
                 });
               }}
               style={{ flex: 1 }}
+              darkMode={this.state.darkMode}
             />
             <Button onClick={() => this.load()} title="Revert all unsaved changes">
               Revert
@@ -210,24 +258,48 @@ export default class App extends React.Component<{}, AppState> {
             </Button>
 
             <Button
+              onClick={(e) => {
+                localStorage.setItem('darkMode', JSON.stringify(!this.state.darkMode));
+                this.setState({ darkMode: !this.state.darkMode });
+              }}
+              style={{ marginLeft: 10, background: this.state.darkMode ? '#181818' : '#333' }}
+              title="Dark Mode"
+            >
+              {this.state.darkMode ? (
+                <Sun size="15" style={{ marginBottom: -3, color: '#1090d6' }} />
+              ) : (
+                <Moon size="15" style={{ marginBottom: -3, color: '#dbbc32' }} />
+              )}
+            </Button>
+
+            <Button
               onClick={(e) => remote.getCurrentWindow().webContents.toggleDevTools()}
-              style={{ marginLeft: 10, background: '#333' }}
+              style={{ marginLeft: 10, background: this.state.darkMode ? '#ddd' : '#333' }}
               title="Debugging Tools"
             >
-              <Terminal size="15" style={{ marginBottom: -3, color: '#eee' }} />
+              <Terminal size="15" style={{ marginBottom: -3, color: this.state.darkMode ? '#333' : '#eee' }} />
             </Button>
           </div>
         </div>
 
         <div style={{ display: 'flex', flex: 1, minHeight: 0, margin: 8 }}>
-          <Tree data={this.state.data} selected={this.state.selected} updateSelected={(selected: any) => this.setState({ selected })} />
+          <Tree
+            data={this.state.data}
+            selected={this.state.selected}
+            updateSelected={(selected: any) => this.setState({ selected })}
+            darkMode={this.state.darkMode}
+          />
+          {/* Easier to make borders this way than fight with annoying edges of things */}
+          <div style={{ borderRight: '1px solid #999', padding: 6 }} />
           <Preview
             data={this.state.data}
             selected={this.state.selected}
             updateSelected={(selected: any) => this.setState({ selected })}
             updateData={this.updateData}
+            darkMode={this.state.darkMode}
           />
-          <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} />
+          <div style={{ borderLeft: '1px solid #999', padding: 6 }} />
+          <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} darkMode={this.state.darkMode} />
         </div>
         {isDevelopment && (
           <div>

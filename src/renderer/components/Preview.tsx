@@ -7,6 +7,7 @@ interface PreviewProps {
   selected?: any;
   updateData: (data: any, cb: () => void) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
   updateSelected: (data: any) => void;
+  darkMode: boolean;
 }
 
 interface PreviewState {
@@ -90,6 +91,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
         pseudoChildren={pseudoChildren}
         previewData={this.previewData}
         zoom={this.state.zoom}
+        darkMode={this.props.darkMode}
       >
         {children}
       </PreviewNode>
@@ -107,7 +109,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     return (
       <div
         className="preview"
-        style={{ flex: 1, margin: '0 8px', overflow: 'hidden', padding: 2 }}
+        style={{ flex: 1, margin: '0 8px', overflow: 'hidden', padding: 2, filter: this.props.darkMode ? 'invert(1)' : undefined }}
         onMouseDown={(e) => this.props.updateSelected(undefined)}
         ref={this.rootRef}
       >

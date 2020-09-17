@@ -6,6 +6,7 @@ interface TreeProps {
   data: any; // TODO Typedefs
   selected?: any;
   updateSelected: (data: any) => void;
+  darkMode: boolean;
 }
 
 export default class Tree extends React.Component<TreeProps> {
@@ -39,6 +40,7 @@ export default class Tree extends React.Component<TreeProps> {
         isChild={isChild || false}
         selected={data === this.props.selected}
         updateSelected={this.props.updateSelected}
+        darkMode={this.props.darkMode}
       >
         {children}
       </TreeNode>
@@ -50,7 +52,11 @@ export default class Tree extends React.Component<TreeProps> {
 
     const root = this.props.data.gff3.struct[0];
     return (
-      <div className="tree" style={{ width: 250, whiteSpace: 'pre', overflowY: 'scroll', padding: 2 }}>
+      <div
+        className="tree"
+        style={{ width: 250, whiteSpace: 'pre', overflowY: 'scroll', padding: '2px 8px 2px 2px' }}
+        onClick={(e) => this.props.updateSelected(undefined)}
+      >
         {this.makeNode(root)}
       </div>
     );

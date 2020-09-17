@@ -27,6 +27,7 @@ interface FilePickerProps {
   file?: string;
   filter?: string | 'directory';
   style?: CSSProperties;
+  darkMode: boolean;
 }
 
 export default class FilePicker extends React.Component<FilePickerProps> {
@@ -52,7 +53,13 @@ export default class FilePicker extends React.Component<FilePickerProps> {
     return (
       <div className={className} style={this.props.style}>
         {this.props.label && <label>{this.props.label}</label>}
-        <input value={this.props.file || ''} onClick={this.chooseFile} readOnly className={valid ? 'valid' : 'invalid'} />
+        <input
+          value={this.props.file || ''}
+          onClick={this.chooseFile}
+          readOnly
+          className={valid ? 'valid' : 'invalid'}
+          style={{ flex: 1, margin: '4px 0 2px', padding: this.props.darkMode ? 6 : 5 }}
+        />
       </div>
     );
   }

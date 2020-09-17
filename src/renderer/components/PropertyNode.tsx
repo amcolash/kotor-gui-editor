@@ -1,13 +1,16 @@
 import React from 'react';
 import * as tinycolor from 'tinycolor2';
 import { style } from 'typestyle';
+import { lightColor } from '../../util/Colors';
 
 const structName = style({
   marginLeft: 14,
 });
 
 const itemStyle = style({
-  padding: 4,
+  padding: '4px 0px 4px 4px',
+  display: 'flex',
+  flexDirection: 'column',
 });
 
 interface PropertyNodeProps {
@@ -15,6 +18,7 @@ interface PropertyNodeProps {
   label: string;
   data: any;
   cb: (newData: any) => void;
+  darkMode: boolean;
 }
 
 export default class PropertyNode extends React.Component<PropertyNodeProps> {
@@ -80,6 +84,7 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
             min="0"
             max="1"
             step="0.01"
+            style={{ marginTop: 4 }}
           />
         ));
         if (data.label === 'COLOR') {
@@ -99,6 +104,12 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
                 updated.double[2].$t = (rgb.b / 255).toFixed(7);
 
                 cb({ ...updated });
+              }}
+              style={{
+                marginTop: 4,
+                backgroundColor: this.props.darkMode ? lightColor : undefined,
+                filter: this.props.darkMode ? 'invert(1)' : undefined,
+                padding: this.props.darkMode ? 'initial !important' : undefined,
               }}
             />
           );

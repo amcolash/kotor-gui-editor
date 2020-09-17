@@ -5,6 +5,7 @@ interface PropertyListProps {
   selected?: any;
   data: any;
   updateData: (data: any) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
+  darkMode: boolean;
 }
 
 export default class PropertyList extends React.Component<PropertyListProps> {
@@ -22,7 +23,7 @@ export default class PropertyList extends React.Component<PropertyListProps> {
     if (type === 'struct') children = this.makeControls(data);
 
     return (
-      <PropertyNode type={type} label={label} cb={cb} data={data} key={label}>
+      <PropertyNode type={type} label={label} cb={cb} data={data} key={label} darkMode={this.props.darkMode}>
         {children}
       </PropertyNode>
     );
@@ -53,8 +54,10 @@ export default class PropertyList extends React.Component<PropertyListProps> {
   }
 
   public render() {
+    if (!this.props.data) return null;
+
     return (
-      <div className="itemBar" ref={this.ref} style={{ width: 225, overflowY: 'scroll', paddingLeft: 8, borderLeft: '1px solid #999' }}>
+      <div className="propertyList" ref={this.ref} style={{ width: 225, overflowY: 'scroll', padding: '0 8px' }}>
         {this.props.selected && this.makeControls(this.props.selected)}
       </div>
     );
