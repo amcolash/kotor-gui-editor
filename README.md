@@ -2,8 +2,6 @@
 
 A tool to make editing the GUI of KotOR visual and simpler
 
-Requires having a few tools from [xoreos-tools](https://github.com/xoreos/xoreos-tools).
-
 ## Screenshots
 
 <img src="https://raw.githubusercontent.com/amcolash/kotor-gui-editor/master/screenshots/dark.png" height="500"/>
@@ -13,6 +11,10 @@ Requires having a few tools from [xoreos-tools](https://github.com/xoreos/xoreos
 ## Basic Usage
 
 This application allows for modifying KotOR (and possibly TSL) `.gui` files. In general I tried to make the UI intuitive and easy enough to follow. Make a issue if you need more detailed docs.
+
+### Getting the Latest Version
+
+You can get the latest release from the [releases page](https://github.com/amcolash/kotor-gui-editor/releases). 
 
 ### Load in Game Assets
 
@@ -37,13 +39,13 @@ From here, it is mostly drag + drop or modifying values in the input boxes in th
 
 Once you are ready to save, there is a save button. It will make a backup of the original `.gui` file (for now)
 
-## Mac OS Specific
+### Mac OS Quirks
 
 The latest few mac releases (Catalina specifically) make using the program much harder. If you still want to try, you will need some comfort with a terminal and will need to have `xocde` and `homebrew` installed.
 
 1. Grab a copy of `xoreos-tools` from https://github.com/xoreos/xoreos-tools (source code, not a release)
 2. Extract the source code
-3. Install a few things (I think that is all that is needed): `$ brew install make cmake automake boost`
+3. Install a few things (I think that this is all that is needed): `$ brew install make cmake automake boost`
 4. Make it `$ ./autogen.sh && ./configure && make`
 5. Install the tools `$ sudo make install`
 
@@ -58,6 +60,8 @@ All of my code written is under the `MIT` license. All `xoreos-tools` code is un
 If you find a bug, please let me know on the [deadlystream post](https://deadlystream.com/topic/8226-visual-kotor-gui-editor-kge) or make an issue on Github!
 
 ## Building Yourself
+
+To build this project, you will need to have `node` installed.
 
 ```bash
 # install dependencies (before anything else)
