@@ -20,8 +20,8 @@
 - [x] Name for App (maybe KGE - kotor gui editor)
 - [x] No need to download xoreos-tools manually
   - [x] Linux
-  - [-] MacOS - No because of signing issues, instead provide instructions on manually building `xoreos-tools`
-  - [ ] Windows
+  - [x] MacOS - Maybe but probably not because of signing issues, instead provide instructions on manually building `xoreos-tools`
+  - [x] Windows
 - [x] Undo stack
   - [x] Group changes together so that typing into inputs is a single final event. Most likely do diffs to see what was modified and keep updating the old undo stack item
   - [x] Fix undo/redo and selection
@@ -31,15 +31,15 @@
   - [x] Dark / Light mode
   - [x] Remove sidebar border when nothing open
   - [-] Collapse Settings UI button? Putting them on the same line helped give back real estate already
-- [ ] Docs on usage
-  - [ ] Specific section on getting MacOs working (need to manually build/install `xoreos-tools` for at least Catalina)
+- [x] Docs on usage
+  - [x] Specific section on getting MacOs working (need to manually build/install `xoreos-tools` for at least Catalina)
 
 ## Post-V1
 
-- [ ] Better higher dpi scaling, make the gui smaller based on zoom > 1
-- [ ] Render borders
-- [ ] Consider prettier inputs/buttons
 - [ ] Write typedefs (at least partially)
+- [ ] Remove `xoreos-tools` from mac bundle (most likely)
+- [ ] Render borders in preview
+- [ ] Consider prettier inputs/buttons
 - [ ] clone/add/delete for nodes/properties?
 - [ ] Math in numeric input boxes?
 - [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(

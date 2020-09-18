@@ -4,7 +4,7 @@ import { bind, bindGlobal } from 'mousetrap';
 import 'mousetrap-global-bind';
 import { join, resolve } from 'path';
 import React from 'react';
-import { Moon, Sun, Terminal } from 'react-feather';
+import { Book, Moon, Sun, Terminal } from 'react-feather';
 import { cssRule } from 'typestyle';
 import {
   darkBackground,
@@ -20,6 +20,7 @@ import { clone, findModifiedNode, getPath } from '../util/DataUtil';
 import { extractPng, loadGff, saveGff } from '../util/XoreosTools';
 import Button from './Button';
 import FilePicker from './FilePicker';
+import License from './License';
 import Preview from './Preview';
 import PropertyList from './PropertyList';
 import Tree from './Tree';
@@ -63,6 +64,7 @@ export interface AppState {
   historyIndex: number;
   lastUpdated: string;
   darkMode: boolean;
+  license: boolean;
   tgaPath?: string;
   guiFile?: string;
   selected?: any;
@@ -70,8 +72,8 @@ export interface AppState {
 }
 
 export const tmpDir = join(remote.app.getPath('temp'), 'kotor-gui');
-const root = resolve(remote.app.getAppPath(), '../../'); // Both in prod and in dev, this seems to be the right path (maybe not on mac)
-export const toolsPath = join(root, `xoreos-tools/xoreos-tools-0.0.6-${os}64/`);
+export const electronRoot = resolve(remote.app.getAppPath(), '../../'); // Both in prod and in dev, this seems to be the right path (maybe not on mac)
+export const toolsPath = join(electronRoot, `xoreos-tools/xoreos-tools-0.0.6-${os}64/`);
 
 console.log('using tool path', toolsPath);
 
@@ -82,6 +84,7 @@ export default class App extends React.Component<{}, AppState> {
     historyIndex: 1,
     lastUpdated: '',
     darkMode: localStorage.getItem('darkMode') === 'true' || false,
+    license: false,
     tgaPath: localStorage.getItem('tgaPath') || undefined,
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
@@ -306,12 +309,21 @@ export default class App extends React.Component<{}, AppState> {
           {this.state.data && <div style={{ borderLeft: '1px solid #999' }} />}
           <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} darkMode={this.state.darkMode} />
         </div>
-        {isDevelopment && (
-          <div>
-            History Size: {this.state.history.length}, History Index; {this.state.historyIndex}, Last Modified Node:{' '}
-            {this.state.lastUpdated}
-          </div>
-        )}
+        <div style={{ display: 'flex' }}>
+          {isDevelopment && (
+            <div>
+              <span style={{ verticalAlign: 'sub' }}>
+                History Size: {this.state.history.length}, History Index; {this.state.historyIndex}, Last Modified Node:{' '}
+                {this.state.lastUpdated}
+              </span>
+            </div>
+          )}
+          <div style={{ flex: 1 }}></div>
+          <Button onClick={(e) => this.setState({ license: !this.state.license })} style={{ margin: 0 }} title="3rd Party Licenses">
+            <Book size="15" style={{ marginBottom: -3 }} />
+          </Button>
+        </div>
+        {this.state.license && <License close={() => this.setState({ license: false })} />}
       </div>
     );
   }

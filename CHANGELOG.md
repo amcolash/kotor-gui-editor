@@ -4,13 +4,20 @@ This changelog keeps track of most (except early development) changes to the too
 
 ## 0.0.4: 09-17-2020
 
+### First Public Release!
+
+### Added
+
+- List of licenses used to UI
+
 ### Updated
 
 - A few small UI tweaks
+- Refactor of some code
 
 ### Fixed
 
-- Outline + handles in preview (TODO) are correctly scaled
+- Outline + handles in preview are correctly scaled based on zoom
 
 ## 0.0.3: 09-17-2020
 

@@ -49,6 +49,10 @@ The latest few mac releases (Catalina specifically) make using the program much 
 
 Once you have those tools in your `PATH`, you should be all set to go using my tool!
 
+## License
+
+All of my code written is under the `MIT` license. All `xoreos-tools` code is under `GPL3`, there is a clear division in the repository between the two.
+
 ## Something Broken?
 
 If you find a bug, please let me know on the [deadlystream post](https://deadlystream.com/topic/8226-visual-kotor-gui-editor-kge) or make an issue on Github!

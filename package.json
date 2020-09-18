@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "electron-webpack dev",
-    "compile": "electron-webpack",
+    "compile": "electron-webpack && generate-license-file --input package.json --output 3rd-party-licenses.txt",
     "dist": "npm run compile && electron-builder",
     "dist:dir": "npm run dist --dir -c.compression=store -c.mac.identity=null",
     "dist:linux": "npm run compile && electron-builder --linux",
@@ -52,6 +52,7 @@
     "electron-devtools-installer": "^3.1.1",
     "electron-webpack": "^2.8.2",
     "electron-webpack-ts": "^4.0.1",
+    "generate-license-file": "^1.1.0",
     "prettier": "^2.1.1",
     "typescript": "^4.0.2",
     "webpack": "^4.44.1"
@@ -63,7 +64,8 @@
       "github"
     ],
     "extraFiles": [
-      "xoreos-tools/xoreos-tools-0.0.6-${os}64/**/*"
+      "xoreos-tools/xoreos-tools-0.0.6-${os}64/**/*",
+      "3rd-party-licenses.txt"
     ],
     "linux": {
       "category": "Utility"
