@@ -295,7 +295,7 @@ export default class App extends React.Component<{}, AppState> {
             darkMode={this.state.darkMode}
           />
           {/* Easier to make borders this way than fight with annoying edges of things */}
-          <div style={{ borderRight: '1px solid #999', padding: 6 }} />
+          {this.state.data && <div style={{ borderRight: '1px solid #999', padding: 6 }} />}
           <Preview
             data={this.state.data}
             selected={this.state.selected}
@@ -303,7 +303,7 @@ export default class App extends React.Component<{}, AppState> {
             updateData={this.updateData}
             darkMode={this.state.darkMode}
           />
-          <div style={{ borderLeft: '1px solid #999', padding: 6 }} />
+          {this.state.data && <div style={{ borderLeft: '1px solid #999' }} />}
           <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} darkMode={this.state.darkMode} />
         </div>
         {isDevelopment && (

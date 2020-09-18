@@ -2,6 +2,16 @@
 
 This changelog keeps track of most (except early development) changes to the tool
 
+## 0.0.4: 09-17-2020
+
+### Updated
+
+- A few small UI tweaks
+
+### Fixed
+
+- Outline + handles in preview (TODO) are correctly scaled
+
 ## 0.0.3: 09-17-2020
 
 ### Added

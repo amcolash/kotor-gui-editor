@@ -93,7 +93,7 @@ export async function extractPng(
 
             await tga2png(extractedTga, dest);
           } else {
-            console.log('no image found for', items[i]);
+            console.log('no image found for', items[i], tgaPath, tpcPath);
           }
         }
       }

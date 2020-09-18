@@ -109,7 +109,7 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     return (
       <div
         className="preview"
-        style={{ flex: 1, margin: '0 8px', overflow: 'hidden', padding: 2, filter: this.props.darkMode ? 'invert(1)' : undefined }}
+        style={{ flex: 1, margin: '0 8px', overflow: 'hidden', padding: 6, filter: this.props.darkMode ? 'invert(1)' : undefined }}
         onMouseDown={(e) => this.props.updateSelected(undefined)}
         ref={this.rootRef}
       >

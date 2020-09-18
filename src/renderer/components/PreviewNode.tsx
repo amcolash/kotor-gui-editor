@@ -31,9 +31,9 @@ const verticalClass = style({
   },
 });
 
-// Apparently there is some weird dpi stuff w/ windows
-const outlineWidth = os === 'win' ? 3 : 6;
-const selectionWidth = os === 'win' ? 2 : 4;
+// Need to figure these numbers out to work for different sizes/zooms
+const outlineWidth = 6;
+const selectionWidth = 4;
 
 interface PreviewNodeProps {
   data: any;
@@ -63,7 +63,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
 
           if (selected === data) {
             style.outline = `${outlineWidth}px solid ${this.props.darkMode ? previewDarkSelection : lightSelection}`;
-            style.outlineOffset = -6;
+            style.outlineOffset = -outlineWidth / 2;
             style.zIndex = 1;
           } else {
             style.outline = '1px solid #555';
