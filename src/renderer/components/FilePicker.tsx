@@ -58,7 +58,7 @@ export default class FilePicker extends React.Component<FilePickerProps> {
           onClick={this.chooseFile}
           readOnly
           className={valid ? 'valid' : 'invalid'}
-          style={{ flex: 1, margin: '4px 0 2px', padding: this.props.darkMode ? 6 : 5 }}
+          style={{ flex: 1, margin: '4px 0 2px', padding: this.props.darkMode ? 5 : 4 }}
         />
       </div>
     );
