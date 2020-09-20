@@ -45,7 +45,13 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     this.previewData.dragImageCache = {};
   }
 
-  private updateZoom = () => {
+  public componentDidUpdate() {
+    // Update zoom when things actually change - for some reason the prev / current are the same :thinkingface:
+    const newZoom = this.calcZoom();
+    if (this.state.zoom !== newZoom) this.updateZoom();
+  }
+
+  private calcZoom = () => {
     if (this.rootRef?.current) {
       const bounds = this.rootRef.current.getBoundingClientRect();
       const padding = parseInt(this.rootRef.current.style.padding);
@@ -53,8 +59,14 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
       const ratioWidth = (bounds.width - padding * 2) / this.previewData.totalWidth;
       const ratioHeight = (bounds.height - padding * 2) / this.previewData.totalHeight;
 
-      this.setState({ zoom: Math.min(ratioWidth, ratioHeight) });
+      return Math.min(ratioWidth, ratioHeight);
     }
+
+    return this.state.zoom;
+  };
+
+  private updateZoom = () => {
+    this.setState({ zoom: this.calcZoom() });
   };
 
   private makeNode(data: Struct): JSX.Element {

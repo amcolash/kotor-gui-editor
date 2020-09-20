@@ -8,6 +8,10 @@ This changelog keeps track of most (except early development) changes to the too
 
 - Add in simple type defs for GFF data. Not perfect, but much better than using `any` everywhere!
 
+### Fixed
+
+- Zoom now updates whenever data changes - not only when dragging an item (i.e. undo/redo/type in)
+
 ## 0.0.4: 09-17-2020
 
 ### First Public Release!
