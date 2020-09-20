@@ -7,10 +7,13 @@ This changelog keeps track of most (except early development) changes to the too
 ### Added
 
 - Add in simple type defs for GFF data. Not perfect, but much better than using `any` everywhere!
+- Evaluate math expressions for numeric inputs
 
 ### Fixed
 
 - Zoom now updates whenever data changes - not only when dragging an item (i.e. undo/redo/type in)
+- ID of `-1` is now parsed + handled properly
+- ID is now a `number` instead of `text`
 
 ## 0.0.4: 09-17-2020
 

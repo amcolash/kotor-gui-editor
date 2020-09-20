@@ -11,6 +11,7 @@ import {
   darkBackgroundInput,
   darkColor,
   darkOutlineInput,
+  iconSize,
   isDevelopment,
   lightBackground,
   lightColor,
@@ -283,9 +284,9 @@ export default class App extends React.Component<{}, AppState> {
               title="Dark Mode"
             >
               {this.state.darkMode ? (
-                <Sun size="15" style={{ marginBottom: -3, color: '#1090d6' }} />
+                <Sun size={iconSize} style={{ marginBottom: -3, color: '#1090d6' }} />
               ) : (
-                <Moon size="15" style={{ marginBottom: -3, color: '#dbbc32' }} />
+                <Moon size={iconSize} style={{ marginBottom: -3, color: '#dbbc32' }} />
               )}
             </Button>
 
@@ -294,7 +295,7 @@ export default class App extends React.Component<{}, AppState> {
               style={{ marginLeft: 10, background: this.state.darkMode ? '#ddd' : '#333' }}
               title="Debugging Tools"
             >
-              <Terminal size="15" style={{ marginBottom: -3, color: this.state.darkMode ? '#333' : '#eee' }} />
+              <Terminal size={iconSize} style={{ marginBottom: -3, color: this.state.darkMode ? '#333' : '#eee' }} />
             </Button>
           </div>
         </div>
@@ -329,7 +330,7 @@ export default class App extends React.Component<{}, AppState> {
           )}
           <div style={{ flex: 1 }}></div>
           <Button onClick={(e) => this.setState({ license: !this.state.license })} style={{ margin: 0 }} title="3rd Party Licenses">
-            <Book size="15" style={{ marginBottom: -3 }} />
+            <Book size={iconSize} style={{ marginBottom: -3 }} />
           </Button>
         </div>
         {this.state.license && <License close={() => this.setState({ license: false })} />}

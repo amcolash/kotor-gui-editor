@@ -15,3 +15,5 @@ export const previewDarkSelection = '#0cbb00';
 
 export const darkBackgroundInput = '#ddd';
 export const darkOutlineInput = '#888';
+
+export const iconSize = 15;

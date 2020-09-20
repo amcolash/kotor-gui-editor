@@ -56,7 +56,8 @@ export default class PropertyList extends React.Component<PropertyListProps> {
   public render() {
     return (
       <div className="propertyList" ref={this.ref} style={{ width: 225, overflowY: 'scroll', padding: '0 8px' }}>
-        {this.props.selected && this.makeControls(this.props.selected)}
+        <h3 style={{ marginTop: 0 }}>Node Properties</h3>
+        {this.props.selected ? this.makeControls(this.props.selected) : <span>Nothing Selected</span>}
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import React from 'react';
 import { X } from 'react-feather';
+import { iconSize } from '../util/Consts';
 import { electronRoot, toolsPath } from './App';
 import Button from './Button';
 
@@ -44,7 +45,7 @@ export default class License extends React.Component<LicenseProps, LicensesState
         >
           {this.state.licenses}
           <Button style={{ position: 'absolute', top: 60, right: 80, background: '#eee' }} onClick={() => this.props.close()}>
-            <X size="14" />
+            <X size={iconSize} />
           </Button>
         </div>
       </div>

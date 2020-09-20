@@ -2,6 +2,7 @@ import React from 'react';
 import * as tinycolor from 'tinycolor2';
 import { style } from 'typestyle';
 import { lightColor } from '../util/Consts';
+import MathInput from './MathInput';
 
 const structName = style({
   marginLeft: 14,
@@ -32,7 +33,19 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
 
     switch (type) {
       case 'id':
-        control = <input type="text" value={data || ''} onChange={(e) => cb(e.target.value)} />;
+        // ID is special, -1 === max unsigned int16 (0xFFFFFFFF)
+        const d = data === '4294967295' ? '-1' : data || '';
+        control = (
+          <input
+            type="number"
+            step="1"
+            value={d}
+            onChange={(e) => {
+              const updated = e.target.value === '-1' ? '4294967295' : e.target.value;
+              cb(updated);
+            }}
+          />
+        );
         break;
       case 'exostring':
       case 'resref':
@@ -43,8 +56,8 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
         break;
       case 'sint32':
         control = (
-          <input
-            type="number"
+          <MathInput
+            name={label}
             value={data.$t}
             step="1"
             min={label === 'WIDTH' || label === 'HEIGHT' ? 1 : undefined}
@@ -54,8 +67,8 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
         break;
       case 'uint32':
         control = (
-          <input
-            type="number"
+          <MathInput
+            name={label}
             value={data.$t}
             min="0"
             step="1"
@@ -65,15 +78,15 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
         break;
       case 'float':
       case 'double':
-        control = <input type="number" step="0.01" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
+        control = <MathInput name={label} step="0.01" value={data.$t} onChange={(e) => cb({ ...data, $t: e.target.value })} />;
         break;
       case 'struct':
         control = <div className={structName}>{this.props.children}</div>;
         break;
       case 'vector':
         control = data.double.map((d: double, i: number) => (
-          <input
-            type="number"
+          <MathInput
+            name={label}
             value={d.$t}
             key={i}
             onChange={(e) => {

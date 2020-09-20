@@ -57,6 +57,7 @@ export default class Tree extends React.Component<TreeProps> {
         style={{ width: 250, whiteSpace: 'pre', overflowY: 'scroll', padding: '2px 8px 2px 2px' }}
         onClick={(e) => this.props.updateSelected(undefined)}
       >
+        <h3 style={{ marginTop: 0 }}>Node Tree</h3>
         {this.makeNode(root)}
       </div>
     );

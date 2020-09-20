@@ -25,6 +25,7 @@
   "dependencies": {
     "command-exists": "^1.2.9",
     "deep-object-diff": "^1.1.0",
+    "mathjs": "^7.2.0",
     "mousetrap": "^1.6.5",
     "mousetrap-global-bind": "^1.1.0",
     "object-path": "^0.11.4",
@@ -41,6 +42,7 @@
     "@types/command-exists": "^1.2.0",
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/klaw": "^3.0.1",
+    "@types/mathjs": "^6.0.5",
     "@types/mousetrap": "^1.6.3",
     "@types/object-path": "^0.11.0",
     "@types/react": "^16.9.49",

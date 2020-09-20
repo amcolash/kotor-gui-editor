@@ -37,10 +37,10 @@
 ## Post-V1
 
 - [x] Write typedefs (at least partially)
+- [ ] Math in numeric input boxes?
 - [ ] Remove `xoreos-tools` from mac bundle (most likely)
-- [ ] Render borders in preview
+- [ ] Render borders/scrollbar buttons in preview
 - [ ] Consider prettier inputs/buttons
 - [ ] clone/add/delete for nodes/properties?
-- [ ] Math in numeric input boxes?
 - [ ] Rewrite drag and drop in dom w/o "draggable"? Maybe not so simple :(
 - ~~[ ] Automated tests? Maybe, but probably not...~~

@@ -7,9 +7,15 @@ const className = style({
   background: 'transparent',
   border: '1px solid #999',
   borderRadius: 2,
+
+  $nest: {
+    '&:disabled': {
+      filter: 'brightness(50%) grayscale(50%)',
+    },
+  },
 });
 
-export default class Button extends React.Component<React.HTMLAttributes<HTMLButtonElement>> {
+export default class Button extends React.Component<React.ButtonHTMLAttributes<HTMLButtonElement>> {
   public render() {
     return <button {...this.props} className={className} />;
   }
