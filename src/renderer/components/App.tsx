@@ -59,15 +59,15 @@ cssRule('.darkMode ::-webkit-scrollbar-thumb', {
 });
 
 export interface AppState {
-  data: any;
-  history: any[];
+  data: GFF;
+  history: GFF[];
   historyIndex: number;
   lastUpdated: string;
   darkMode: boolean;
   license: boolean;
   tgaPath?: string;
   guiFile?: string;
-  selected?: any;
+  selected?: Struct;
   extracting?: string;
 }
 
@@ -79,7 +79,7 @@ console.log('using tool path', toolsPath);
 
 export default class App extends React.Component<{}, AppState> {
   state: AppState = {
-    data: '',
+    data: { gff3: { struct: [], type: 'unknown' } },
     history: [],
     historyIndex: 1,
     lastUpdated: '',
@@ -117,7 +117,14 @@ export default class App extends React.Component<{}, AppState> {
   private extract(clear?: boolean) {
     if (!this.state.tgaPath) return;
 
-    extractPng(this.state.tgaPath, toolsPath, this.state.data, (s: any) => this.setState(s), this.handleError, clear);
+    extractPng(
+      this.state.tgaPath,
+      toolsPath,
+      this.state.data,
+      (s: Partial<AppState>) => this.setState(s as AppState),
+      this.handleError,
+      clear
+    );
   }
 
   private load() {
@@ -126,8 +133,8 @@ export default class App extends React.Component<{}, AppState> {
     loadGff(
       this.state.guiFile,
       toolsPath,
-      (s: any) => {
-        this.setState(s, () => {
+      (s: Partial<AppState>) => {
+        this.setState(s as AppState, () => {
           console.log('data', s.data);
           this.extract();
         });
@@ -136,7 +143,9 @@ export default class App extends React.Component<{}, AppState> {
     );
   }
 
-  private updateData = (data: any, cb?: () => void) => {
+  private updateData = (d?: GFF, cb?: () => void) => {
+    const data = d || this.state.data;
+
     let history = [...this.state.history, clone(this.state.data)];
 
     // Determine if we need to update the last history item or make a new entry (so things like rename won't blow up history stack)
@@ -294,7 +303,7 @@ export default class App extends React.Component<{}, AppState> {
           <Tree
             data={this.state.data}
             selected={this.state.selected}
-            updateSelected={(selected: any) => this.setState({ selected })}
+            updateSelected={(selected?: Struct) => this.setState({ selected })}
             darkMode={this.state.darkMode}
           />
           {/* Easier to make borders this way than fight with annoying edges of things */}
@@ -302,12 +311,12 @@ export default class App extends React.Component<{}, AppState> {
           <Preview
             data={this.state.data}
             selected={this.state.selected}
-            updateSelected={(selected: any) => this.setState({ selected })}
+            updateSelected={(selected?: Struct) => this.setState({ selected })}
             updateData={this.updateData}
             darkMode={this.state.darkMode}
           />
           {this.state.data && <div style={{ borderLeft: '1px solid #999' }} />}
-          <PropertyList data={this.state.data} selected={this.state.selected} updateData={this.updateData} darkMode={this.state.darkMode} />
+          <PropertyList selected={this.state.selected} updateData={this.updateData} darkMode={this.state.darkMode} />
         </div>
         <div style={{ display: 'flex' }}>
           {isDevelopment && (

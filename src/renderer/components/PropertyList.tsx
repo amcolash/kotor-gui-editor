@@ -2,9 +2,8 @@ import React from 'react';
 import PropertyNode from './PropertyNode';
 
 interface PropertyListProps {
-  selected?: any;
-  data: any;
-  updateData: (data: any) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
+  selected?: Struct;
+  updateData: () => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
   darkMode: boolean;
 }
 
@@ -29,6 +28,7 @@ export default class PropertyList extends React.Component<PropertyListProps> {
     );
   }
 
+  // TODO: Make this better! w/ Typedefs
   private makeControls(data: any): JSX.Element {
     const children: JSX.Element[] = [];
     Object.keys(data).forEach((k) => {
@@ -37,14 +37,14 @@ export default class PropertyList extends React.Component<PropertyListProps> {
         for (let i = 0; i < data[k].length; i++) {
           const c = this.makeControl(k, data[k][i].label, data[k][i], (updated) => {
             data[k][i] = updated;
-            this.props.updateData(this.props.data);
+            this.props.updateData();
           });
           if (c) children.push(c);
         }
       } else {
         const c = this.makeControl(k, data[k].label || k, data[k], (updated) => {
           data[k] = updated;
-          this.props.updateData(this.props.data);
+          this.props.updateData();
         });
         if (c) children.push(c);
       }
@@ -54,8 +54,6 @@ export default class PropertyList extends React.Component<PropertyListProps> {
   }
 
   public render() {
-    if (!this.props.data) return null;
-
     return (
       <div className="propertyList" ref={this.ref} style={{ width: 225, overflowY: 'scroll', padding: '0 8px' }}>
         {this.props.selected && this.makeControls(this.props.selected)}

@@ -23,11 +23,11 @@ const verticalClass = style({
 });
 
 interface PreviewNodeProps {
-  data: any;
+  data: Struct;
   label: string;
-  selected: any;
+  selected?: Struct;
   updateData: () => void;
-  updateSelected: (data: any) => void;
+  updateSelected: (data?: Struct) => void;
   pseudoChildren: JSX.Element[];
   previewData: PreviewData;
   zoom: number;
@@ -56,7 +56,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
     let height: number = 0;
 
     if (data.struct) {
-      data.struct.forEach((s: any) => {
+      data.struct.forEach((s: Struct) => {
         if (s.label === 'EXTENT') {
           style.position = 'absolute';
 
@@ -69,7 +69,7 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
             style.outlineOffset = -1;
           }
 
-          s.sint32.forEach((s: any) => {
+          s.sint32?.forEach((s: sint32) => {
             if (s.label === 'TOP') style.top = parseInt(s.$t);
             if (s.label === 'LEFT') style.left = parseInt(s.$t);
             if (s.label === 'WIDTH') {
@@ -86,13 +86,13 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
           previewData.totalHeight = Math.max(previewData.totalHeight, (style.top as number) + (style.height as number));
         } else if (s.label === 'BORDER') {
           let showImg = false;
-          s.sint32.forEach((s: any) => {
+          s.sint32?.forEach((s: sint32) => {
             if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
           });
 
           let img;
           if (showImg) {
-            s.resref.forEach((s: any) => {
+            s.resref?.forEach((s: resref) => {
               if (s.label === 'FILL' && s.$t) {
                 style.backgroundRepeat = 'no-repeat';
                 style.backgroundSize = `${width}px ${height}px`;
@@ -183,9 +183,9 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
       const isTop = (e.target as HTMLElement).classList.contains('top');
       const isBottom = (e.target as HTMLElement).classList.contains('bottom');
 
-      data.struct.forEach((s: any) => {
+      data.struct?.forEach((s: Struct) => {
         if (s.label === 'EXTENT') {
-          s.sint32.forEach((s: any) => {
+          s.sint32?.forEach((s: sint32) => {
             if (s.label === 'LEFT' && isLeft) s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
             if (s.label === 'TOP' && isTop) s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
 
@@ -241,9 +241,9 @@ export default class PreviewNode extends React.Component<PreviewNodeProps> {
             const diffX = (previewData.coords.x - e.clientX) / zoom;
             const diffY = (previewData.coords.y - e.clientY) / zoom;
 
-            data.struct.forEach((s: any) => {
+            data.struct?.forEach((s: Struct) => {
               if (s.label === 'EXTENT') {
-                s.sint32.forEach((s: any) => {
+                s.sint32?.forEach((s: sint32) => {
                   if (s.label === 'TOP') s.$t = Math.floor(parseInt(s.$t) - diffY).toString();
                   if (s.label === 'LEFT') s.$t = Math.floor(parseInt(s.$t) - diffX).toString();
                 });

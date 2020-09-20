@@ -3,9 +3,9 @@ import { getLabel } from '../util/DataUtil';
 import TreeNode from './TreeNode';
 
 interface TreeProps {
-  data: any; // TODO Typedefs
-  selected?: any;
-  updateSelected: (data: any) => void;
+  data: GFF;
+  selected?: Struct;
+  updateSelected: (data?: Struct) => void;
   darkMode: boolean;
 }
 
@@ -15,17 +15,17 @@ export default class Tree extends React.Component<TreeProps> {
     if (selected) selected.scrollIntoView();
   }
 
-  private makeNode(data: any, isChild?: boolean): JSX.Element {
+  private makeNode(data: Struct, isChild?: boolean): JSX.Element {
     const label = getLabel(data);
 
     const children: JSX.Element[] = [];
-    if (data.list && data.list.struct) {
-      data.list.struct.forEach((e: any) => {
+    if (data.list) {
+      data.list.struct.forEach((e: Struct) => {
         children.push(this.makeNode(e, true));
       });
     }
     if (data.struct) {
-      data.struct.forEach((e: any) => {
+      data.struct.forEach((e: Struct) => {
         if (e.label === 'PROTOITEM' || e.label === 'SCROLLBAR') {
           children.push(this.makeNode(e, true));
         }
@@ -48,9 +48,9 @@ export default class Tree extends React.Component<TreeProps> {
   }
 
   public render() {
-    if (!this.props.data) return null;
-
     const root = this.props.data.gff3.struct[0];
+    if (!root) return null;
+
     return (
       <div
         className="tree"

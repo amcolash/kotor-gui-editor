@@ -15,10 +15,10 @@ cssRule('.treeItem', {
 
 interface TreeNodeProps {
   label: string;
-  data: any;
+  data: Struct;
   selected: boolean;
   isChild: boolean;
-  updateSelected: (data: any) => void;
+  updateSelected: (data: Struct) => void;
   darkMode: boolean;
 }
 

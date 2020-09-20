@@ -3,10 +3,10 @@ import { getLabel } from '../util/DataUtil';
 import PreviewNode from './PreviewNode';
 
 interface PreviewProps {
-  data: any; // TODO Typedefs
-  selected?: any;
-  updateData: (data: any, cb: () => void) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
-  updateSelected: (data: any) => void;
+  data: GFF;
+  selected?: Struct;
+  updateData: (data: GFF, cb: () => void) => void; // BAD PRACTICE, BUT IT IS SO MUCH EAISER TO UPDATE NESTED THINGS THIS WAY
+  updateSelected: (data?: Struct) => void;
   darkMode: boolean;
 }
 
@@ -57,28 +57,24 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
     }
   };
 
-  private makeNode(data: any): JSX.Element {
+  private makeNode(data: Struct): JSX.Element {
     const label = getLabel(data);
 
     // Children are true child elements
     // It matters for proper preview layout (nested or sibling in DOM)
     const children: JSX.Element[] = [];
-    if (data.list && data.list.struct) {
-      data.list.struct.forEach((e: any) => {
-        children.push(this.makeNode(e));
-      });
-    }
+    data.list?.struct.forEach((e: Struct) => {
+      children.push(this.makeNode(e));
+    });
 
     // pseudoChildren are nested structs like PROTOITEM/SCROLLBAR
     // It matters for proper preview layout (nested or sibling in DOM)
     const pseudoChildren: JSX.Element[] = [];
-    if (data.struct) {
-      data.struct.forEach((s: any) => {
-        if (s.label === 'PROTOITEM' || s.label === 'SCROLLBAR') {
-          pseudoChildren.push(this.makeNode(s));
-        }
-      });
-    }
+    data.struct?.forEach((s: Struct) => {
+      if (s.label === 'PROTOITEM' || s.label === 'SCROLLBAR') {
+        pseudoChildren.push(this.makeNode(s));
+      }
+    });
 
     return (
       <PreviewNode
@@ -99,13 +95,12 @@ export default class Preview extends React.Component<PreviewProps, PreviewState>
   }
 
   public render() {
-    if (!this.props.data) return null;
-
     // Reset size before it is calculated by making children
     this.previewData.totalWidth = 1;
     this.previewData.totalHeight = 1;
 
     const root = this.props.data.gff3.struct[0];
+    if (!root) return null;
     return (
       <div
         className="preview"

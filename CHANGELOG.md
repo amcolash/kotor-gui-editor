@@ -2,6 +2,12 @@
 
 This changelog keeps track of most (except early development) changes to the tool
 
+## 0.0.5: 09-17-2020
+
+### Added
+
+- Add in simple type defs for GFF data. Not perfect, but much better than using `any` everywhere!
+
 ## 0.0.4: 09-17-2020
 
 ### First Public Release!

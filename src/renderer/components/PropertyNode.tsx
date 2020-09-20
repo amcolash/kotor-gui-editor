@@ -71,7 +71,7 @@ export default class PropertyNode extends React.Component<PropertyNodeProps> {
         control = <div className={structName}>{this.props.children}</div>;
         break;
       case 'vector':
-        control = data.double.map((d: any, i: number) => (
+        control = data.double.map((d: double, i: number) => (
           <input
             type="number"
             value={d.$t}

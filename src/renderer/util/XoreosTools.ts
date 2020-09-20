@@ -10,7 +10,7 @@ import { clone, commandInPath } from './DataUtil';
 export async function extractPng(
   tgaPath: string,
   toolsPath: string,
-  data: any,
+  data: GFF,
   setState: (state: Partial<AppState>) => void,
   handleError: (e: any) => void,
   clear?: boolean
@@ -21,17 +21,17 @@ export async function extractPng(
 
       const imageSet: Set<string> = new Set();
 
-      const checkNode = (data: any) => {
+      const checkNode = (data: Struct) => {
         if (data.struct) {
-          data.struct.forEach((s: any) => {
+          data.struct.forEach((s: Struct) => {
             if (s.label === 'BORDER') {
               let showImg = false;
-              s.sint32.forEach((s: any) => {
+              s.sint32?.forEach((s: sint32) => {
                 if (s.label === 'FILLSTYLE' && s.$t === '2') showImg = true;
               });
 
               if (showImg) {
-                s.resref.forEach((s: any) => {
+                s.resref?.forEach((s: resref) => {
                   if (s.label === 'FILL' && s.$t) imageSet.add(s.$t);
                 });
               }
@@ -40,7 +40,7 @@ export async function extractPng(
         }
 
         if (data.list?.struct) {
-          data.list.struct.forEach((s: any) => {
+          data.list.struct.forEach((s: Struct) => {
             checkNode(s);
           });
         }
@@ -112,7 +112,7 @@ export async function loadGff(
   handleError: (e: any) => void
 ) {
   if (guiFile && existsSync(guiFile)) {
-    let data: any;
+    let data: GFF | undefined;
 
     try {
       const command = 'gff2xml' + (platform() === 'win32' ? '.exe' : '');
@@ -132,13 +132,13 @@ export async function loadGff(
 
       const xml = await readFileAsync(resolvedXml);
 
-      data = toJson(xml, {
+      data = (toJson(xml, {
         object: true,
         reversible: true,
         sanitize: true,
         trim: true,
-        arrayNotation: ['sint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
-      });
+        arrayNotation: ['sint32', 'uint32', 'byte', 'exostring', 'struct', 'vector', 'resref'],
+      }) as unknown) as GFF;
     } catch (e) {
       handleError(e);
     }
@@ -150,7 +150,7 @@ export async function loadGff(
   }
 }
 
-export async function saveGff(guiFile: string, toolsPath: string, data: any, handleError: (e: any) => void) {
+export async function saveGff(guiFile: string, toolsPath: string, data: GFF, handleError: (e: any) => void) {
   if (guiFile && (await existsAsync(guiFile))) {
     try {
       const command = 'xml2gff' + (platform() === 'win32' ? '.exe' : '');
@@ -162,7 +162,7 @@ export async function saveGff(guiFile: string, toolsPath: string, data: any, han
 
       await copyFileAsync(resolvedGui, resolvedBackupGui);
 
-      const xml = toXml(data);
+      const xml = toXml(data as any);
       await writeFileAsync(resolvedXml, xml);
 
       const { stdout, stderr } = await execAsync(`${resolvedTool} --kotor "${resolvedXml}" "${resolvedGui}"`);
