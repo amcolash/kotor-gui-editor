@@ -8,6 +8,7 @@ This changelog keeps track of most (except early development) changes to the too
 
 - Add in simple type defs for GFF data. Not perfect, but much better than using `any` everywhere!
 - Evaluate math expressions for numeric inputs
+- Menu bar and About window
 
 ### Fixed
 

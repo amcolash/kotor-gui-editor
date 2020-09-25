@@ -1,11 +1,12 @@
 import { detailedDiff } from 'deep-object-diff';
 import { remote } from 'electron';
-import { bind, bindGlobal } from 'mousetrap';
+import { bindGlobal } from 'mousetrap';
 import 'mousetrap-global-bind';
 import { join, resolve } from 'path';
 import React from 'react';
 import { Book, Moon, Sun, Terminal } from 'react-feather';
 import { cssRule } from 'typestyle';
+import { makeMenu } from '../../main/menu';
 import {
   darkBackground,
   darkBackgroundInput,
@@ -90,14 +91,15 @@ export default class App extends React.Component<{}, AppState> {
     guiFile: localStorage.getItem('guiFile') || undefined,
   };
 
-  // TODO: Only for dev
   public componentDidMount() {
+    // Note: ASAR path only works in prod
+    const packageDir = isDevelopment ? resolve(electronRoot) : resolve(__dirname);
+    const menu = makeMenu(electronRoot, packageDir, this.changeHistory);
+    remote.Menu.setApplicationMenu(menu);
+
     this.load();
 
     window.onerror = this.handleError;
-
-    bind(['ctrl+shift+i', 'command+option+i', 'f12'], () => remote.getCurrentWindow().webContents.toggleDevTools());
-    bind(['mod+r', 'shift+mod+r'], () => remote.getCurrentWindow().reload());
 
     // Override undo/redo in text boxes
     bindGlobal('mod+z', () => {
@@ -186,7 +188,7 @@ export default class App extends React.Component<{}, AppState> {
   };
 
   // Careful! Rewriting the past can lead to all kinds of wrinkles in the fabric of time
-  private changeHistory(dir: number) {
+  private changeHistory = (dir: number) => {
     const historyIndex = this.state.historyIndex + dir;
     if (historyIndex > 0 && this.state.history.length >= historyIndex) {
       const data = clone(this.state.history[this.state.history.length - historyIndex]);
@@ -196,7 +198,7 @@ export default class App extends React.Component<{}, AppState> {
 
       this.setState({ data, historyIndex, selected });
     }
-  }
+  };
 
   public render() {
     const background = this.state.darkMode ? darkBackground : lightBackground;

@@ -7,11 +7,13 @@
   },
   "version": "0.0.5",
   "license": "MIT",
+  "homepage": "https://github.com/amcolash/kotor-gui-editor",
   "repository": {
     "type": "git",
     "url": "https://github.com/amcolash/kotor-gui-editor.git"
   },
   "scripts": {
+    "clean": "rm -rf dist/",
     "dev": "electron-webpack dev",
     "compile": "electron-webpack && generate-license-file --input package.json --output 3rd-party-licenses.txt",
     "dist": "npm run compile && electron-builder",
@@ -23,6 +25,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "about-window": "^1.13.4",
     "command-exists": "^1.2.9",
     "deep-object-diff": "^1.1.0",
     "mathjs": "^7.2.0",
@@ -67,7 +70,8 @@
     ],
     "extraFiles": [
       "xoreos-tools/xoreos-tools-0.0.6-${os}64/**/*",
-      "3rd-party-licenses.txt"
+      "3rd-party-licenses.txt",
+      "build/icon.*"
     ],
     "linux": {
       "category": "Utility"

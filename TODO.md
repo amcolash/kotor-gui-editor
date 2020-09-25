@@ -37,7 +37,10 @@
 ## Post-V1
 
 - [x] Write typedefs (at least partially)
-- [ ] Math in numeric input boxes?
+- [x] Math in numeric input boxes?
+- [x] Add about screen
+- [x] Add menu bar
+- [ ] Uniform scaling of all nodes
 - [ ] Remove `xoreos-tools` from mac bundle (most likely)
 - [ ] Render borders/scrollbar buttons in preview
 - [ ] Consider prettier inputs/buttons
